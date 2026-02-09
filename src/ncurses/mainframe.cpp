@@ -20,6 +20,7 @@
 #include "subshell.h"
 #include "FSWatchDetect.h"
 #include <functional>
+#include <fcntl.h>
 
 using namespace MLSUTIL;
 using namespace MLS;
@@ -43,6 +44,7 @@ void TitleChange(const string &sPath, bool bHostNameShow) {
     string sHostName, sLogin;
     string sStr = sPath;
     char cHostName[100];
+    char titleBuf[512];
 
     memset(cHostName, 0, sizeof(cHostName));
 
@@ -59,13 +61,20 @@ void TitleChange(const string &sPath, bool bHostNameShow) {
         snprintf(cHostName, sizeof(cHostName), "localhost");
 
     if (strlen(cHostName) == 0 || sLogin.size() == 0 || !bHostNameShow) {
-        printf("%c]0;LinM %s - %s%c", '\033', VERSION, sStr.c_str(), '\007');
+        snprintf(titleBuf, sizeof(titleBuf), "\033]0;LinM %s - %s\007", VERSION, sStr.c_str());
     } else {
         sHostName = cHostName;
         if (sHostName.find(".") != string::npos)
             sHostName = sHostName.substr(0, sHostName.find("."));
 
-        printf("%c]0;LinM %s - %s@%s:%s%c", '\033', VERSION, sLogin.c_str(), sHostName.c_str(), sStr.c_str(), '\007');
+        snprintf(titleBuf, sizeof(titleBuf), "\033]0;LinM %s - %s@%s:%s\007", VERSION, sLogin.c_str(), sHostName.c_str(), sStr.c_str());
+    }
+
+    // Write directly to /dev/tty to bypass ncurses screen buffer
+    int fd = open("/dev/tty", O_WRONLY);
+    if (fd >= 0) {
+        write(fd, titleBuf, strlen(titleBuf));
+        close(fd);
     }
 }
 
