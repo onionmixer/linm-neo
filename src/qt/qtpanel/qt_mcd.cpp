@@ -8,20 +8,16 @@
 #include "qt_mcd.h"
 
 Qt_McdItem::Qt_McdItem( Qt_McdItem* pParent, Qt_Mcd* pMcd, MLS::File& tFile ):
-	Q3ListViewItem( pParent ), _pMcd( pMcd ), _tFile( tFile )
+	QTreeWidgetItem( pParent ), _pMcd( pMcd ), _tFile( tFile )
 {
 	if ( tFile.bDir && !tFile.isExecute() )
-		setPixmap( 0, LinMGlobal::GetSmallIcon( "folder-locked" ) );
+		setIcon( 0, QIcon(LinMGlobal::GetSmallIcon( "folder-locked" )) );
 	else
-		setPixmap( 0, LinMGlobal::GetSmallIcon( "folder" ) );
-
-	setup();
-	widthChanged( 0 );
-	invalidateHeight();
+		setIcon( 0, QIcon(LinMGlobal::GetSmallIcon( "folder" )) );
 }
 
-Qt_McdItem::Qt_McdItem( Qt_Mcd* pMcd, MLS::File& tFile ): 
-	Q3ListViewItem( (Q3ListView*)pMcd ), _pMcd( pMcd ), _tFile( tFile )
+Qt_McdItem::Qt_McdItem( Qt_Mcd* pMcd, MLS::File& tFile ):
+	QTreeWidgetItem( (QTreeWidget*)pMcd ), _pMcd( pMcd ), _tFile( tFile )
 {
 }
 
@@ -34,6 +30,7 @@ QString 	Qt_McdItem::text( int column ) const
 {
 	if ( column == 0 )
 		return QObject::tr( _tFile.sName.c_str() );
+	return QString();
 }
 
 bool		Qt_McdItem::OpenChk( const string& sPath, bool bChkSubDir, bool bSubDirAll )
@@ -44,12 +41,12 @@ bool		Qt_McdItem::OpenChk( const string& sPath, bool bChkSubDir, bool bSubDirAll
 		throw Exception( "Qt_McdItem pReader is NULL." );
 
 	string 	sBefPath = pReader->GetPath();
-	
+
 	if ( !_tFile.bDir ) return -1;
 
 	if ( pReader->Read( sPath ) == false)
 		return -1;
-	
+
 	vector<Qt_McdItem*>	vDirList;
 	bool	bChkDir = false;
 
@@ -72,7 +69,7 @@ bool		Qt_McdItem::OpenChk( const string& sPath, bool bChkSubDir, bool bSubDirAll
 				Qt_McdItem* pItem = new Qt_McdItem( this, _pMcd, tFile );
 				vDirList.push_back( pItem );
 			}
-			
+
 			bChkDir = true;
 		}
 	}
@@ -81,19 +78,18 @@ bool		Qt_McdItem::OpenChk( const string& sPath, bool bChkSubDir, bool bSubDirAll
 	{
 		Qt_McdItem*	pDirNode = vDirList.back();
 		vDirList.pop_back();
-	
+
 		if ( bSubDirAll )
-			pDirNode->setOpen( TRUE ); // be interesting
+			pDirNode->setOpen( true );
 		else
 		{
 			if ( pDirNode->OpenChk( pDirNode->GetFile()->sFullName, true, false ) )
-				pDirNode->setExpandable( TRUE );
+				pDirNode->setChildIndicatorPolicy( QTreeWidgetItem::ShowIndicator );
 			else
-				pDirNode->setExpandable( FALSE );
+				pDirNode->setChildIndicatorPolicy( QTreeWidgetItem::DontShowIndicator );
 		}
 	}
 
-	// 함수를 실행하기 전 디렉토리로 이동.
 	pReader->Read( sBefPath );
 	return bChkDir;
 }
@@ -101,31 +97,31 @@ bool		Qt_McdItem::OpenChk( const string& sPath, bool bChkSubDir, bool bSubDirAll
 void Qt_McdItem::setOpen( bool bOpen )
 {
 	if ( bOpen )
-		setPixmap( 0, LinMGlobal::GetSmallIcon( "folder-open" ) );
+		setIcon( 0, QIcon(LinMGlobal::GetSmallIcon( "folder-open" )) );
 	else
-		setPixmap( 0, LinMGlobal::GetSmallIcon( "folder" ) );
+		setIcon( 0, QIcon(LinMGlobal::GetSmallIcon( "folder" )) );
 
 	if ( bOpen && !childCount() )
 	{
-		listView()->setUpdatesEnabled( FALSE );
+		treeWidget()->setUpdatesEnabled( false );
 
 		OpenChk( _tFile.sFullName, false, false );
 
-		listView()->setUpdatesEnabled( TRUE );
+		treeWidget()->setUpdatesEnabled( true );
 	}
-	Q3ListViewItem::setOpen( bOpen );
+	setExpanded( bOpen );
 }
 
 Qt_Mcd::Qt_Mcd(Qt_Panel* pPanel, QWidget* parent, const char* name):
-	Q3ListView( parent, name ), _pPanel( pPanel )
+	QTreeWidget( parent ), _pPanel( pPanel )
 {
 	_bHidden = false;
 	_pReader = 0;
 
 	setFocusPolicy( Qt::NoFocus );
 
-	connect( this, SIGNAL( doubleClicked( Q3ListViewItem * ) ),
-			 this, SLOT( SetPanelDirChg( Q3ListViewItem * ) ) );
+	connect( this, SIGNAL( itemDoubleClicked( QTreeWidgetItem *, int ) ),
+			 this, SLOT( SetPanelDirChg( QTreeWidgetItem *, int ) ) );
 }
 
 Qt_Mcd::~Qt_Mcd()
@@ -145,13 +141,13 @@ MLS::Reader*	Qt_Mcd::GetReader()
 bool	Qt_Mcd::InitMcd( MLS::Reader* pReader, const string& sRootPath )
 {
 	qDebug() << "Qt_Mcd::InitMcd";
-	if ( !pReader ) 
+	if ( !pReader )
 		throw Exception( "InitMcd Reader is NULL !!!" );
 
 	_pReader = pReader;
 
 	string 	sBefPath = pReader->GetPath();
-		
+
 	if ( pReader->Read( sRootPath.c_str() ) == false)
 		return false;
 
@@ -161,46 +157,43 @@ bool	Qt_Mcd::InitMcd( MLS::Reader* pReader, const string& sRootPath )
 	tFile.bDir = true;
 
 	clear();
-	
+
 	Qt_McdItem* pRoot = new Qt_McdItem( this, tFile );
 
-	//pRoot->OpenChk( tFile.sFullName, true, false );
-	pRoot->setOpen( TRUE ); // be interesting
+	pRoot->setOpen( true );
 
 	pReader->Read( sBefPath );
 
-	//resize( 400, 400 );
-	setAllColumnsShowFocus( TRUE );
+	setAllColumnsShowFocus( true );
 	qDebug() << "Qt_Mcd::InitMcd End";
 	return true;
 }
 
 void 	Qt_Mcd::setDir( const string &sFullName )
 {
-	Q3ListViewItemIterator it( this );
+	QTreeWidgetItemIterator it( this );
 
 	++it;
 
-	for( ; it.current(); ++it )
-		it.current()->setOpen( FALSE );
-	
-	QStringList lst( QStringList::split( "/", tr( sFullName.c_str() ) ) );
+	for( ; *it; ++it )
+		(*it)->setExpanded( false );
+
+	QStringList lst( QString( tr( sFullName.c_str() ) ).split("/", Qt::SkipEmptyParts) );
 	QStringList::Iterator it2 = lst.begin();
-	
-	Qt_McdItem *item = (Qt_McdItem*)firstChild();
-	
+
+	Qt_McdItem *item = (Qt_McdItem*)topLevelItem(0);
+
 	for ( ; it2 != lst.end(); ++it2 )
 	{
 		while ( item )
 		{
-			//if ( item->GetFile()->sFullName == sFullName )
 			if ( item->text( 0 ) == *it2 )
 			{
-				item->setOpen( TRUE );
+				item->setOpen( true );
 				break;
 			}
 
-			item = (Qt_McdItem*)item->itemBelow();
+			item = (Qt_McdItem*)itemBelow(item);
 		}
 	}
 
@@ -213,7 +206,7 @@ void	Qt_Mcd::setDir( const MLS::File& file )
 	setDir( file.sFullName );
 }
 
-void	Qt_Mcd::SetPanelDirChg ( Q3ListViewItem * item )
+void	Qt_Mcd::SetPanelDirChg ( QTreeWidgetItem * item, int column )
 {
 	MLS::File*	pFile = ((Qt_McdItem*)item)->GetFile();
 
@@ -221,12 +214,12 @@ void	Qt_Mcd::SetPanelDirChg ( Q3ListViewItem * item )
 
 	if ( _pPanel->isVisible() )
 		_pPanel->Refresh();
-	
-	item->setPixmap( 0, LinMGlobal::GetSmallIcon( "folder-open" ) );
+
+	item->setIcon( 0, QIcon(LinMGlobal::GetSmallIcon( "folder-open" )) );
 }
 
 void	Qt_Mcd::resizeEvent( QResizeEvent* e )
 {
 	setColumnWidth( 0, e->size().width() - 20 );
-	Q3ListView::resizeEvent( e );
+	QTreeWidget::resizeEvent( e );
 }

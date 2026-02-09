@@ -1,7 +1,7 @@
 #ifndef __QT_COMMAND_H__
 #define __QT_COMMAND_H__
 
-#include <qobject.h>
+#include <QObject>
 
 class Qt_Panel;
 class Qt_MainWindow;

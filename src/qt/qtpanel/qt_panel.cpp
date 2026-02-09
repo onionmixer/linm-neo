@@ -11,16 +11,10 @@
 #include <QTimer>
 #include <QDateTime>
 #include <QApplication>
-#include <QDesktopWidget>
+#include <QScreen>
+#include <QGuiApplication>
 #include <QWheelEvent>
 #include <QDebug>
-
-#ifdef LINM_KDE
-	#include <KDE/KMimeType>
-	#include <KDE/KUrl>
-#else
-
-#endif
 
 #include "define.h"
 #include "mpool.h"
@@ -69,7 +63,7 @@ Qt_Panel::Qt_Panel(	PanelToolTip* 	pToolTip,
     /* Background black */
 	QColor color(255, 255, 255);
     QPalette palette;
-    palette.setColor( QPalette::Background, color );
+    palette.setColor( QPalette::Window, color );
 
     setPalette( palette );
     setAutoFillBackground( true );
@@ -88,7 +82,11 @@ Qt_Panel::Qt_Panel(	PanelToolTip* 	pToolTip,
 	_pScroolBar->setFixedSize( 18, height() - 20 );
 	_pScroolBar->setPageStep( 1 );
 	
-	_pixScreenshot = QPixmap::grabWindow( QApplication::desktop()->winId() );
+	{
+		QScreen *screen = QGuiApplication::primaryScreen();
+		if (screen)
+			_pixScreenshot = screen->grabWindow( 0 );
+	}
 	_bTranslucency = false; 
 	_bWheelFileUpdown = true;
 
@@ -99,7 +97,7 @@ Qt_Panel::Qt_Panel(	PanelToolTip* 	pToolTip,
 
 	connect( _pScroolBar, SIGNAL( valueChanged( int ) ), this, SLOT( scrollbarChg() ) );
 
-	setMouseTracking( TRUE );
+	setMouseTracking( true );
 	setFocusPolicy( Qt::StrongFocus );
 
 	_pStatusBar->setPanel( this );
@@ -126,29 +124,30 @@ void	Qt_Panel::setStatusBar( PanelStatusBar* pStatusBar )
 
 void	Qt_Panel::wheelEvent ( QWheelEvent * event )
 {
-	qDebug("wheel event x [%d] y [%d] delta [%d]", event->x(), event->y(), event->delta() );
+	int delta = event->angleDelta().y();
+	qDebug("wheel event delta [%d]", delta );
 
 	if ( !_bWheelFileUpdown )
 	{
 		int nPage = _pScroolBar->value();
-	
-		if ( event->delta() < 0 )
+
+		if ( delta < 0 )
 			nPage++;
-		else if ( event->delta() > 0 )
+		else if ( delta > 0 )
 			nPage--;
-	
-		if ( _pScroolBar->maxValue() >= nPage && _pScroolBar->minValue() <= nPage )
+
+		if ( _pScroolBar->maximum() >= nPage && _pScroolBar->minimum() <= nPage )
 			_pScroolBar->setValue( nPage );
 	}
 	else
 	{
 		if ( focusWidget() == this )
 		{
-			if ( event->delta() < 0 )
+			if ( delta < 0 )
 				MLS::Panel::Key_Down();
-			else if ( event->delta() > 0 )
+			else if ( delta > 0 )
 				MLS::Panel::Key_Up();
-	
+
 			ChangeFocusUpdate( _uCur );
 		}
 	}
@@ -419,11 +418,11 @@ void Qt_Panel::paintEvent(QPaintEvent */*event*/)
 		QRect	roundRect( rect() );		
 		roundRect.setRect( 1, 1, roundRect.width() - 2, roundRect.height() - 2 );
 		painter.setPen( pen );
-		painter.drawRoundRect( roundRect, 2, 2 );
+		painter.drawRoundedRect( roundRect, 2, 2 );
 	}
 
 	QFontMetrics fm( font() );
-	_nDefFontWidth = fm.width( "A" );
+	_nDefFontWidth = fm.horizontalAdvance( QChar('A') );
 	_nDefBoxHeight = fm.height() + 6;
 
 	QPen 	pen(Qt::gray, 1, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin);
@@ -478,15 +477,14 @@ void Qt_Panel::paintEvent(QPaintEvent */*event*/)
 	_pScroolBar->setFixedSize( 20, _viewPanelBox.height() + _nDefBoxHeight );
 	_pScroolBar->move( viewBox.x() + viewBox.width(), _viewPanelBox.y() - _nDefBoxHeight );
 
-	_pScroolBar->setMinValue( 1 );
+	_pScroolBar->setMinimum( 1 );
 	if ( _nCol != 0 && _nRow != 0 )
 	{
 		int nMaxPage = ((_vDirFiles.size()-1) / (_nCol * _nRow) ) + 1;
-		//qDebug( "Page [%d] [%d] [%d]", nMaxPage, (int)_vDirFiles.size(), _nCol*_nRow ); 
-		_pScroolBar->setMaxValue( nMaxPage );
+		_pScroolBar->setMaximum( nMaxPage );
 	}
 	else
-		_pScroolBar->setMaxValue( 1 );
+		_pScroolBar->setMaximum( 1 );
 
 	_pStatusBar->update();
 	//qDebug() << "Qt_Panel::paintEvent End.................";
@@ -680,16 +678,9 @@ void	Qt_Panel::ReadEnd()
 		pFile = _vDirFiles[n];
 		if ( pFile )
 		{
-			#ifdef LINM_KDE
-			if ( pFile->bDir )
-				pFile->sTmp3 = "folder";
-			else
-				pFile->sTmp3 = (const char*)KMimeType::iconNameForUrl( KUrl( pFile->sName.c_str() ) ).toAscii(); // Tmp3 to iconName.
-			#else
 			pFile->sTmp3 = pFile->Ext().c_str();
 			if ( pFile->sTmp3.empty() )
 				pFile->sTmp3 = pFile->sName.c_str();
-			#endif
 		}
 	}
 }

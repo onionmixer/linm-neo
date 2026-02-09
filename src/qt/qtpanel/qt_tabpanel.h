@@ -1,8 +1,8 @@
 #ifndef __QT_TABPANEL_H__
 #define __QT_TABPANEL_H__
 
-#include <qframe.h>
-#include <qtabwidget.h>
+#include <QFrame>
+#include <QTabWidget>
 
 #include "file.h"
 
@@ -19,7 +19,7 @@ class Qt_TabPanel:public QTabWidget
 Q_OBJECT
 
 public:
-	Qt_TabPanel( 	PanelToolTip* 	pToolTip, 
+	Qt_TabPanel( 	PanelToolTip* 	pToolTip,
 					PanelStatusBar* pStatusBar,
 					PanelCmd*		pPanelCmd,
 					QWidget* parent = 0 );
@@ -40,7 +40,7 @@ protected slots:
 protected:
 	void	keyPressEvent( QKeyEvent* event );
 	void	focusInEvent( QFocusEvent* event );
-	
+
 private:
 	PanelToolTip*		_pToolTip;
 	PanelStatusBar*		_pStatusBar;
@@ -50,13 +50,13 @@ private:
 class CentralMain: public QFrame
 {
 public:
-	CentralMain( 	PanelToolTip* 	pToolTip, 
+	CentralMain( 	PanelToolTip* 	pToolTip,
 					PanelCmd*		pPanelCmd,
 					QWidget* parent = 0, const char* name = 0 );
 
 	Qt_Panel* 	GetFocusPanel();
 	Qt_Mcd*		GetFocusMcd();
-	
+
 	bool		isSplit();
 	void		Refresh();
 	void		Split();

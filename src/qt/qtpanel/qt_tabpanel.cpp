@@ -1,11 +1,10 @@
-#include <qlayout.h>
-#include <qframe.h>
-#include <qtabbar.h>
-#include <qtabwidget.h>
-#include <qtoolbutton.h>
-#include <qsplitter.h>
+#include <QLayout>
+#include <QFrame>
+#include <QTabBar>
+#include <QTabWidget>
+#include <QToolButton>
+#include <QSplitter>
 
-#include <Q3ScrollView>
 #include <QKeyEvent>
 #include <QDebug>
 #include <QApplication>
@@ -29,7 +28,7 @@ public:
 	Qt_Mcd*		_pMcd;
 };
 
-Qt_TabPanel::Qt_TabPanel( 	PanelToolTip* 	pToolTip, 
+Qt_TabPanel::Qt_TabPanel( 	PanelToolTip* 	pToolTip,
 							PanelStatusBar* pStatusBar,
 							PanelCmd*		pPanelCmd,
 							QWidget* parent ):
@@ -39,26 +38,26 @@ Qt_TabPanel::Qt_TabPanel( 	PanelToolTip* 	pToolTip,
 
 	qDebug() << "Qt_TabPanel::Qt_TabPanel";
 	PanelInsert();
-	
+
 	QToolButton*	addButton = new QToolButton( this );
 	QToolButton*	delButton = new QToolButton( this );
 
 	addButton->setFocusPolicy( Qt::NoFocus );
 	delButton->setFocusPolicy( Qt::NoFocus );
-	
-	const QIconSet& iconset = LinMGlobal::GetIconSet( "list-add" );
-	addButton->setIconSet( iconset );
-	setCornerWidget( addButton, Qt::TopLeft );
 
-	const QIconSet& iconset2 = LinMGlobal::GetIconSet( "list-remove" );
-	delButton->setIconSet( iconset2 );
-	setCornerWidget( delButton, Qt::TopRight );
-	
+	const QIcon& iconset = LinMGlobal::GetIconSet( "list-add" );
+	addButton->setIcon( iconset );
+	setCornerWidget( addButton, Qt::TopLeftCorner );
+
+	const QIcon& iconset2 = LinMGlobal::GetIconSet( "list-remove" );
+	delButton->setIcon( iconset2 );
+	setCornerWidget( delButton, Qt::TopRightCorner );
+
 	setTabPosition( QTabWidget::South  );
-	
+
 	connect( addButton, SIGNAL( clicked() ), this, SLOT( PanelInsert() ) );
 	connect( delButton, SIGNAL( clicked() ), this, SLOT( PanelRemove() ) );
-	
+
 	qDebug() << "Qt_TabPanel::Qt_TabPanel End";
 }
 
@@ -68,19 +67,19 @@ Qt_TabPanel::~Qt_TabPanel()
 
 MLS::File*	Qt_TabPanel::getCurFile()
 {
-	QMcdPanel*	pPanel = (QMcdPanel*)currentPage();
+	QMcdPanel*	pPanel = (QMcdPanel*)currentWidget();
 	return pPanel->_pPanel->GetCurFile();
 }
 
 Qt_Panel*	Qt_TabPanel::getViewPanel()
 {
-	QMcdPanel*	pPanel = (QMcdPanel*)currentPage();
+	QMcdPanel*	pPanel = (QMcdPanel*)currentWidget();
 	return pPanel->_pPanel;
 }
 
 Qt_Mcd*		Qt_TabPanel::getViewMcd()
 {
-	QMcdPanel*	pPanel = (QMcdPanel*)currentPage();
+	QMcdPanel*	pPanel = (QMcdPanel*)currentWidget();
 	return pPanel->_pMcd;
 }
 
@@ -93,10 +92,10 @@ void		Qt_TabPanel::setTabLabelChg( Qt_Panel* pPanel, const QString& strName )
 {
 	for( int n = 0; n < count(); n++ )
 	{
-		QMcdPanel* p = (QMcdPanel*)page( n );
+		QMcdPanel* p = (QMcdPanel*)widget( n );
 		if ( p->_pPanel == pPanel )
 		{
-			setTabLabel( p, strName );
+			setTabText( indexOf(p), strName );
 			break;
 		}
 	}
@@ -106,44 +105,51 @@ void		Qt_TabPanel::PanelInsert()
 {
 	QMcdPanel* pPanelMcd = new QMcdPanel( Qt::Horizontal, this );
 
-	Qt_Panel*	pPanel = new Qt_Panel( 	_pToolTip, _pStatusBar, 
+	Qt_Panel*	pPanel = new Qt_Panel( 	_pToolTip, _pStatusBar,
 										_pPanelCmd, this, pPanelMcd );
 	Qt_Mcd*		pMcd = new Qt_Mcd( pPanel, pPanelMcd );
 
 	pPanelMcd->setFocusPolicy( Qt::NoFocus );
-	pPanelMcd->setResizeMode ( pMcd, QSplitter::KeepSize );
-	pPanelMcd->setResizeMode ( pPanel, QSplitter::KeepSize );
-	pPanelMcd->moveToFirst( pMcd );
+	pPanelMcd->setCollapsible( pPanelMcd->indexOf(pMcd), false );
+	pPanelMcd->setCollapsible( pPanelMcd->indexOf(pPanel), false );
+	pPanelMcd->insertWidget( 0, pMcd );
 
 	qDebug() << "PanelInsert() :: 1";
 	pPanel->Read("~");
-	pPanel->setBackgroundColor( Qt::white );
+	{
+		QPalette pal = pPanel->palette();
+		pal.setColor( QPalette::Window, Qt::white );
+		pPanel->setPalette( pal );
+		pPanel->setAutoFillBackground( true );
+	}
 	pPanel->setMinimumSize( 400, 200 );
 
 	qDebug() << "PanelInsert() :: 2";
-	
-	pMcd->addColumn( "Name" );
-	pMcd->setTreeStepSize( 20 );
+
+	pMcd->setHeaderLabel( "Name" );
+	pMcd->setIndentation( 20 );
 	pMcd->InitMcd( pPanel->GetReader(), "/" );
-	pMcd->setBackgroundColor( Qt::white );
+	{
+		QPalette pal = pMcd->palette();
+		pal.setColor( QPalette::Window, Qt::white );
+		pMcd->setPalette( pal );
+		pMcd->setAutoFillBackground( true );
+	}
 	pMcd->setColumnWidth( 0, 250 );
 	pMcd->setSizePolicy( QSizePolicy( QSizePolicy::Maximum, QSizePolicy::Minimum ) );
-	pMcd->setVScrollBarMode( Q3ScrollView::AlwaysOn );
+	pMcd->setVerticalScrollBarPolicy( Qt::ScrollBarAlwaysOn );
 	pMcd->setMinimumSize( 100, 100 );
 	pMcd->setDir( pPanel->GetPath() );
-	
+
 	qDebug() << "PanelInsert() :: 3";
 
-	//pMcd->show();
-	//pPanel->show();
-	
 	pPanelMcd->_pMcd = pMcd;
 	pPanelMcd->_pPanel = pPanel;
-	
-	const QIconSet& iconset = LinMGlobal::GetIconSet( "folder" );
+
+	const QIcon& iconset = LinMGlobal::GetIconSet( "folder" );
 	addTab( pPanelMcd, iconset, "~" );
 
-	setCurrentPage( count() - 1 );
+	setCurrentIndex( count() - 1 );
 	qDebug() << "PanelInsert() :: 4";
 }
 
@@ -151,11 +157,11 @@ void		Qt_TabPanel::PanelRemove()
 {
 	if ( count() > 1 )
 	{
-		QMcdPanel*	pPanelMcd = (QMcdPanel*)currentPage();
+		QMcdPanel*	pPanelMcd = (QMcdPanel*)currentWidget();
 
 		if ( pPanelMcd )
 		{
-			removePage( pPanelMcd );
+			removeTab( indexOf(pPanelMcd) );
 			pPanelMcd->close();
 			delete pPanelMcd;
 			pPanelMcd = 0;
@@ -189,18 +195,17 @@ void	Qt_TabPanel::keyPressEvent( QKeyEvent* event )
 void	Qt_TabPanel::focusInEvent( QFocusEvent* )
 {
 	qDebug("Qt_TabPanel :: focusInEvent");
-	Qt_Panel*	pPanel = (Qt_Panel*)currentPage();
-	pPanel->setActiveWindow();
+	Qt_Panel*	pPanel = (Qt_Panel*)currentWidget();
+	pPanel->activateWindow();
 	pPanel->setFocus();
 }
 
-CentralMain::CentralMain( 	PanelToolTip* 	pToolTip, 
+CentralMain::CentralMain( 	PanelToolTip* 	pToolTip,
 							PanelCmd*		pPanelCmd,
-							QWidget* 		parent, 
+							QWidget* 		parent,
 							const char* 	name )
-	: QFrame( parent, name )
+	: QFrame( parent )
 {
-	//setBackgroundMode(PaletteBase);
 	setFrameStyle( QFrame::Panel | QFrame::Sunken );
 	setContentsMargins( 0, 0, 0, 0 );
 
@@ -217,7 +222,7 @@ CentralMain::CentralMain( 	PanelToolTip* 	pToolTip,
 	_pLeftTabWidget = new Qt_TabPanel( pToolTip, _pStatusBar, _pPanelCmd, this );
 	_pRightTabWidget = new Qt_TabPanel( pToolTip, _pStatusBar, _pPanelCmd, this );
 
-	_QHbox = 0;	
+	_QHbox = 0;
 	_QVbox = 0;
 
 	_bSplit = false;
@@ -240,67 +245,67 @@ void	CentralMain::DrawPanel()
 	{
 		_QHbox = new QHBoxLayout;
 		_QVbox = new QVBoxLayout( this );
-		_QHbox->setMargin( 0 );
+		_QHbox->setContentsMargins( 0, 0, 0, 0 );
 		_QHbox->setSpacing( 0 );
-		_QVbox->setMargin( 0 );
+		_QVbox->setContentsMargins( 0, 0, 0, 0 );
 		_QVbox->setSpacing( 0 );
 
 		if ( _pLeftTabWidget->getViewPanel()->_bFocus )
 		{
-			_QHbox->add( _pLeftTabWidget );
+			_QHbox->addWidget( _pLeftTabWidget );
 			_pRightTabWidget->hide();
 		}
 		else
 		{
-			_QHbox->add( _pRightTabWidget );
+			_QHbox->addWidget( _pRightTabWidget );
 			_pLeftTabWidget->hide();
 		}
 
 		_QVbox->addLayout( _QHbox );
-		_QVbox->add( _pStatusBar );
-		_QVbox->add( _pFuncBar );
+		_QVbox->addWidget( _pStatusBar );
+		_QVbox->addWidget( _pFuncBar );
 	}
 	else if (_bSplit && !_bViewType)
 	{
 		_QHbox = new QHBoxLayout;
 		_QVbox = new QVBoxLayout( this );
-		_QHbox->setMargin( 0 );
+		_QHbox->setContentsMargins( 0, 0, 0, 0 );
 		_QHbox->setSpacing( 0 );
-		_QVbox->setMargin( 0 );
+		_QVbox->setContentsMargins( 0, 0, 0, 0 );
 		_QVbox->setSpacing( 0 );
 
-		_QHbox->add( _pLeftTabWidget );
-		_QHbox->add( _pRightTabWidget );
+		_QHbox->addWidget( _pLeftTabWidget );
+		_QHbox->addWidget( _pRightTabWidget );
 
 		_pLeftTabWidget->show();
 		_pRightTabWidget->show();
-		
+
 		_QVbox->addLayout( _QHbox );
-		_QVbox->setMargin( 0 );
-		_QVbox->add( _pStatusBar );
-		_QVbox->add( _pFuncBar );
+		_QVbox->setContentsMargins( 0, 0, 0, 0 );
+		_QVbox->addWidget( _pStatusBar );
+		_QVbox->addWidget( _pFuncBar );
 	}
 	else if (_bSplit && _bViewType)
 	{
 		_QHbox = new QVBoxLayout;
 		_QVbox = new QVBoxLayout( this );
-		_QHbox->setMargin( 0 );
+		_QHbox->setContentsMargins( 0, 0, 0, 0 );
 		_QHbox->setSpacing( 0 );
-		_QVbox->setMargin( 0 );
+		_QVbox->setContentsMargins( 0, 0, 0, 0 );
 		_QVbox->setSpacing( 0 );
-		
-		_QHbox->add( _pLeftTabWidget );
-		_QHbox->add( _pRightTabWidget );	
+
+		_QHbox->addWidget( _pLeftTabWidget );
+		_QHbox->addWidget( _pRightTabWidget );
 
 		_pLeftTabWidget->show();
 		_pRightTabWidget->show();
-		
+
 		_QVbox->addLayout( _QHbox );
-		_QVbox->setMargin( 0 );
-		_QVbox->add( _pStatusBar );
-		_QVbox->add( _pFuncBar );
+		_QVbox->setContentsMargins( 0, 0, 0, 0 );
+		_QVbox->addWidget( _pStatusBar );
+		_QVbox->addWidget( _pFuncBar );
 	}
-	
+
 	_QVbox->activate();
 
 	_pStatusBar->show();
@@ -319,14 +324,13 @@ void	CentralMain::Split()
 		_bSplit = false;
 		_bViewType = false;
 	}
-	else 
+	else
 	{
 		_bSplit = !_bSplit;
 		_bViewType = false;
 	}
 
 	DrawPanel();
-	//Refresh();
 }
 
 Qt_Panel* 	CentralMain::GetFocusPanel()
@@ -368,7 +372,7 @@ void CentralMain::NextFocus()
 		_pLeftTabWidget->getViewPanel()->setFocus();
 	}
 	else
-	{	
+	{
 		_pRightTabWidget->getViewPanel()->_bFocus = true;
 		_pLeftTabWidget->getViewPanel()->_bFocus = false;
 

@@ -1,4 +1,4 @@
-#include <qframe.h>
+#include <QFrame>
 #include <QLabel>
 #include <QHBoxLayout>
 #include <QFont>
@@ -96,7 +96,7 @@ void	PanelStatusBar::paintEvent( QPaintEvent* e )
 		painter.setPen( QPen( QColor( 101, 70, 171 ) ) );
 		painter.drawText( QPoint( nFontWidth, fmBold.height()-3 ), strFileNum );
 
-		nFontWidth = nFontWidth + fmBold.width( strFileNum ) + 5;
+		nFontWidth = nFontWidth + fmBold.horizontalAdvance( strFileNum ) + 5;
 		strText = tr( "File" );
 
 		painter.setFont( fontDefault );
@@ -105,14 +105,14 @@ void	PanelStatusBar::paintEvent( QPaintEvent* e )
 
 		///////////////////////////////////////////////////////
 		// Directory number
-		nFontWidth = nFontWidth + fmBold.width( strText ) + 20;
+		nFontWidth = nFontWidth + fmBold.horizontalAdvance( strText ) + 20;
 		strFileNum = QString::number( _pPanel->_uDir );
 		
 		painter.setFont( fontBold );
 		painter.setPen( QPen( QColor( 101, 70, 171 ) ) );
 		painter.drawText( QPoint( nFontWidth, fmBold.height()-3 ), strFileNum );
 
-		nFontWidth = nFontWidth + fmBold.width( strFileNum ) + 5;
+		nFontWidth = nFontWidth + fmBold.horizontalAdvance( strFileNum ) + 5;
 		strText = tr( "Directory" );
 
 		painter.setFont( fontDefault );
@@ -121,14 +121,14 @@ void	PanelStatusBar::paintEvent( QPaintEvent* e )
 
 		///////////////////////////////////////////////////////
 		// Files Byte
-		nFontWidth = nFontWidth + fmBold.width( strText ) + 20;
+		nFontWidth = nFontWidth + fmBold.horizontalAdvance( strText ) + 20;
 		strFileNum = MLSUTIL::toregular(_pPanel->_uDirSize).c_str();
 		
 		painter.setFont( fontBold );
 		painter.setPen( QPen( QColor( 101, 70, 171 ) ) );
 		painter.drawText( QPoint( nFontWidth, fmBold.height()-3 ), strFileNum );
 
-		nFontWidth = nFontWidth + fmBold.width( strFileNum ) + 5;
+		nFontWidth = nFontWidth + fmBold.horizontalAdvance( strFileNum ) + 5;
 		strText = tr( "Byte" );
 
 		painter.setFont( fontDefault );

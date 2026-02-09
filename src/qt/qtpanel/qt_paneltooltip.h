@@ -1,8 +1,8 @@
 #ifndef __QT_PANELTOOLTIP_H__
 #define __QT_PANELTOOLTIP_H__
 
-#include <qwidget.h>
-#include <qpixmap.h>
+#include <QWidget>
+#include <QPixmap>
 
 #include "file.h"
 
@@ -31,7 +31,7 @@ protected:
 	void	showEvent( QShowEvent* event );
 	void	paintEvent( QPaintEvent* event );
 	void 	keyPressEvent( QKeyEvent* event );
-	
+
 private:
 	MLS::File*		_pFile;
 	QColor			_lineColor;

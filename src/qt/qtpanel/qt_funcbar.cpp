@@ -29,12 +29,12 @@ FuncBar::~FuncBar()
 void FuncBar::init( ViewType tType )
 {
 	QBoxLayout*	_pHBox = new QHBoxLayout( this );
-	_pHBox->setMargin( 0 );
+	_pHBox->setContentsMargins( 0, 0, 0, 0 );
 	_pHBox->setSpacing( 1 );
 
 	QColor color(120, 120, 255);
 	QPalette palette;
-	palette.setColor( QPalette::Background, color );
+	palette.setColor( QPalette::Window, color );
 
 	for ( int n = 1; n <= 12; n++ )
 	{

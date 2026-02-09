@@ -8,12 +8,12 @@
 #include "qt_menu.h"
 #include "qt_dialog.h"
 
-MenuItem::MenuItem(	const string& 	icon, 
-					const string& 	viewname, 
+MenuItem::MenuItem(	const string& 	icon,
+					const string& 	viewname,
 					const string&	cmd,
 					const bool		bTb,
 					const string&   sTip ):
-				strIconPath( icon ), strViewName( viewname ), 
+				strIconPath( icon ), strViewName( viewname ),
 				strCmd( cmd ), pChild( 0 ), bToolbar( bTb ), strTip( sTip )
 {
 }
@@ -28,7 +28,7 @@ QKeySequence	MenuCategory::GetKeyNameToNum( const string& strKeyName )
 	for (int n = 0; n < (int)_vKeyList.size(); n++)
 	{
 		MLS::KeyInfo tKeyInfo2 = _vKeyList[n];
-		
+
 		if ( tKeyInfo2.sKeyName == strKeyName )
 		{
 			if ( strKeyName.substr( 0, 4 ) == "Alt+" )
@@ -74,13 +74,13 @@ void	MenuCategory::AddItem(	const string& strIconPath,
 }
 
 vector<MenuItem>&		MenuCategory::GetMenuInfo()
-{ 
+{
 	return _vPopMenu;
 }
-	
+
 const string&			MenuCategory::GetTitle()
-{ 
-	return _strTitle; 
+{
+	return _strTitle;
 }
 
 LinMMenu::LinMMenu( QMainWindow* pTarget, PanelCmd* pCmdList )
@@ -92,7 +92,6 @@ LinMMenu::LinMMenu( QMainWindow* pTarget, PanelCmd* pCmdList )
 	_pCmdList = pCmdList;
 
 	_pMenuBar = pTarget->menuBar();
-	_pMenuBar->setSeparator( QMenuBar::InWindowsStyle );
 }
 
 LinMMenu::~LinMMenu()
@@ -105,7 +104,7 @@ QMenu*		LinMMenu::AddCategory( MenuCategory& tMenu )
 
 	QToolBar*	pToolbar = _pDrawWidget->addToolBar( _(tMenu.GetTitle().c_str()) );
 	QMenu* view = _pMenuBar->addMenu( tMenu.GetTitle().c_str() );
-	
+
 	string		sChildTitle;
 
 	bool	bToolBar = false;
@@ -113,7 +112,7 @@ QMenu*		LinMMenu::AddCategory( MenuCategory& tMenu )
 	for(int n = 0; n < (int)vMenuItem.size(); n++ )
 	{
 		MenuItem&	tMenuItem = vMenuItem[n];
-		
+
 		if ( tMenuItem.pChild )
 		{
 			qDebug() << "TEST !!!!!!!!!!!!!";
@@ -127,7 +126,7 @@ QMenu*		LinMMenu::AddCategory( MenuCategory& tMenu )
 			}
 			continue;
 		}
-		
+
 		if ( tMenuItem.strViewName.size() )
 		{
 			if ( tMenuItem.strCmd.size() )
@@ -138,8 +137,8 @@ QMenu*		LinMMenu::AddCategory( MenuCategory& tMenu )
 					strCmd = tMenuItem.strCmd.substr(4).c_str();
 				else
 					strCmd = tMenuItem.strCmd.c_str();
-			
-				strCmd.sprintf( "%d%s()", QSLOT_CODE, (const char*)strCmd.toAscii() );
+
+				strCmd = QString::asprintf( "%d%s()", QSLOT_CODE, strCmd.toLatin1().constData() );
 
 				if ( tMenuItem.strIconPath.size() )
 				{
@@ -150,10 +149,10 @@ QMenu*		LinMMenu::AddCategory( MenuCategory& tMenu )
 					newAction->setShortcut( tMenuItem.tKeySeq );
 					newAction->setStatusTip( tMenuItem.strTip.c_str() );
 
-					QObject::connect( newAction, SIGNAL(triggered()), _pCmdList, (const char*)strCmd.toAscii() );
-					
+					QObject::connect( newAction, SIGNAL(triggered()), _pCmdList, strCmd.toLatin1().constData() );
+
 					view->addAction( newAction );
-					newAction->addTo( pToolbar );
+					pToolbar->addAction( newAction );
 					bToolBar = true;
 				}
 				else
@@ -163,7 +162,7 @@ QMenu*		LinMMenu::AddCategory( MenuCategory& tMenu )
 					newAction->setShortcut( QKeySequence( tMenuItem.tKeySeq ) );
 					newAction->setStatusTip( tMenuItem.strTip.c_str() );
 
-					QObject::connect( newAction, SIGNAL( activated() ), _pCmdList, (const char*)strCmd.toAscii() );
+					QObject::connect( newAction, SIGNAL( triggered() ), _pCmdList, strCmd.toLatin1().constData() );
 
 					view->addAction( newAction );
 				}
@@ -171,7 +170,7 @@ QMenu*		LinMMenu::AddCategory( MenuCategory& tMenu )
 			else
 			{
 				view->addAction(	tMenuItem.strViewName.c_str(),
-									_pCmdList, 
+									_pCmdList,
 									SLOT( Cmd_Empty() ),
 									QKeySequence( tMenuItem.tKeySeq ) );
 			}
@@ -185,29 +184,15 @@ QMenu*		LinMMenu::AddCategory( MenuCategory& tMenu )
 	return view;
 }
 
-QMenu*		LinMMenu::PopupCategory(MenuCategory& tMenu, 
-									QWidget* pWidget, 
-									PanelCmd*	pCmdList, 
+QMenu*		LinMMenu::PopupCategory(MenuCategory& tMenu,
+									QWidget* pWidget,
+									PanelCmd*	pCmdList,
 									bool bTitle )
 {
 	vector<MenuItem>& vMenuItem = tMenu.GetMenuInfo();
 
 	QMenu* view = new QMenu( pWidget );
 	string		sChildTitle;
-
-	/*
-	if( bTitle )
-	{
-		string sMsg;
-		sMsg = "<font color=darkblue><u><b>";
-		sMsg =+ tMenu.GetTitle().c_str();
-		sMsg =+ "Context Menu</b></u></font>";
-		
-		QLabel *caption = new QLabel( sMsg, pWidget );
-		caption->setAlignment( Qt::AlignCenter );
-		view->insertItem( caption );
-	}
-	*/
 
 	for(int n = 0; n < (int)vMenuItem.size(); n++ )
 	{
@@ -222,18 +207,18 @@ QMenu*		LinMMenu::PopupCategory(MenuCategory& tMenu,
 			{
 				pChildMenu->setTitle( tMenuItem.strViewName.c_str() );
 				view->addMenu( pChildMenu );
-			}	
+			}
 			continue;
 		}
-		
+
 		if ( tMenuItem.strViewName.size() )
 		{
 			const QPixmap& tIconData = LinMGlobal::GetSmallIcon( tMenuItem.strIconPath.c_str() );
-			
+
 			if ( tMenuItem.strCmd.size() )
 			{
 				QString 	strCmd;
-				strCmd.sprintf( "%d%s()", QSLOT_CODE, tMenuItem.strCmd.c_str() );
+				strCmd = QString::asprintf( "%d%s()", QSLOT_CODE, tMenuItem.strCmd.c_str() );
 
 				if ( tMenuItem.strIconPath.size() )
 				{
@@ -244,8 +229,8 @@ QMenu*		LinMMenu::PopupCategory(MenuCategory& tMenu,
 					newAction->setShortcut( tMenuItem.tKeySeq );
 					newAction->setStatusTip( tMenuItem.strTip.c_str() );
 
-					QObject::connect( newAction, SIGNAL(triggered()), pCmdList, (const char*)strCmd.toAscii() );
-					
+					QObject::connect( newAction, SIGNAL(triggered()), pCmdList, strCmd.toLatin1().constData() );
+
 					newAction->setMenu( view );
 				}
 				else
@@ -255,7 +240,7 @@ QMenu*		LinMMenu::PopupCategory(MenuCategory& tMenu,
 					newAction->setShortcut( tMenuItem.tKeySeq );
 					newAction->setStatusTip( tMenuItem.strTip.c_str() );
 
-					QObject::connect( newAction, SIGNAL( triggered() ), pCmdList, (const char*)strCmd.toAscii() );
+					QObject::connect( newAction, SIGNAL( triggered() ), pCmdList, strCmd.toLatin1().constData() );
 
 					newAction->setMenu( view );
 				}
@@ -263,7 +248,7 @@ QMenu*		LinMMenu::PopupCategory(MenuCategory& tMenu,
 			else
 			{
 				view->addAction(	tMenuItem.strViewName.c_str(),
-									pCmdList, 
+									pCmdList,
 									SLOT( Cmd_Empty() ),
 									tMenuItem.tKeySeq );
 			}

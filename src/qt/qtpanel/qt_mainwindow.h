@@ -1,7 +1,7 @@
 #ifndef __QT_MAINWINDOW_H__
 #define __QT_MAINWINDOW_H__
 
-#include <qmainwindow.h>
+#include <QMainWindow>
 
 class Qt_TabPanel;
 class QWidget;

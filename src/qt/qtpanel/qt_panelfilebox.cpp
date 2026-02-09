@@ -153,34 +153,34 @@ void	Qt_FileBox::SizeView( QPainter& painter, QRect& box )
 		if (_pFile->uSize >= 1000000000)
 		{
 			QString			sSize, sGiga( "G" );
-			sSize.sprintf( "%.2f", (float)_pFile->uSize/1073741824 );
+			sSize = QString::asprintf( "%.2f", (float)_pFile->uSize/1073741824 );
 	
 			QRect 	gigaRect = box;
 			painter.setPen( QPen( Qt::red ) ); // Color
-			gigaRect.setX( box.x() + box.width() - fm.width( sGiga ) - 2 );
-			gigaRect.setWidth( fm.width( sGiga ) );
+			gigaRect.setX( box.x() + box.width() - fm.horizontalAdvance( sGiga ) - 2 );
+			gigaRect.setWidth( fm.horizontalAdvance( sGiga ) );
 			painter.drawText(gigaRect, Qt::AlignVCenter | Qt::AlignLeft, sGiga );
 	
 			QRect sizetxt = box;
-			sizetxt.setX( gigaRect.x() - fm.width( sSize ) );
-			sizetxt.setWidth( fm.width( sSize ) );
+			sizetxt.setX( gigaRect.x() - fm.horizontalAdvance( sSize ) );
+			sizetxt.setWidth( fm.horizontalAdvance( sSize ) );
 			painter.setPen( QPen( _fontColor ) ); // Color
 			painter.drawText(sizetxt, Qt::AlignVCenter | Qt::AlignLeft, sSize );
 		}
 		else if (_pFile->uSize >= 10000000)
 		{
 			QString			sSize, sMega( "M" );
-			sSize.sprintf( "%.2f", (float)_pFile->uSize/1048576 );
+			sSize = QString::asprintf( "%.2f", (float)_pFile->uSize/1048576 );
 	
 			QRect 	megaRect = box;
 			painter.setPen( QPen( Qt::red ) ); // Color
-			megaRect.setX( box.x() + box.width() - fm.width( sMega ) - 2 );
-			megaRect.setWidth( fm.width( sMega ) );
+			megaRect.setX( box.x() + box.width() - fm.horizontalAdvance( sMega ) - 2 );
+			megaRect.setWidth( fm.horizontalAdvance( sMega ) );
 			painter.drawText(megaRect, Qt::AlignVCenter | Qt::AlignLeft, sMega );
 	
 			QRect sizetxt = box;
-			sizetxt.setX( megaRect.x() - fm.width( sSize ) );
-			sizetxt.setWidth( fm.width( sSize ) );
+			sizetxt.setX( megaRect.x() - fm.horizontalAdvance( sSize ) );
+			sizetxt.setWidth( fm.horizontalAdvance( sSize ) );
 			painter.setPen( QPen( _fontColor ) ); // Color
 			painter.drawText(sizetxt, Qt::AlignVCenter | Qt::AlignLeft, sSize );
 		}
@@ -188,10 +188,10 @@ void	Qt_FileBox::SizeView( QPainter& painter, QRect& box )
 		{
 			QString		sSize = MLSUTIL::toregular( _pFile->uSize ).c_str();
 			QRect sizetxt = box;
-			sizetxt.setX( box.x() + box.width() - fm.width( sSize ) );
+			sizetxt.setX( box.x() + box.width() - fm.horizontalAdvance( sSize ) );
 	
-			//qDebug("Size [%s] [%d]", (const char*)sSize, fm.width( sSize ));
-			sizetxt.setWidth( fm.width( sSize ) );
+			//qDebug("Size [%s] [%d]", (const char*)sSize, fm.horizontalAdvance( sSize ));
+			sizetxt.setWidth( fm.horizontalAdvance( sSize ) );
 			painter.setPen( QPen( _fontColor ) ); // Color
 			painter.drawText(sizetxt, Qt::AlignVCenter | Qt::AlignLeft, sSize );
 		}
@@ -203,16 +203,16 @@ void	Qt_FileBox::SizeView( QPainter& painter, QRect& box )
 		if ( !_bTitleButton )
 		{
 			QRect sizetxt = box;
-			sizetxt.setX( box.x() + box.width() - fm.width( str ) - 2 );
+			sizetxt.setX( box.x() + box.width() - fm.horizontalAdvance( str ) - 2 );
 			painter.setPen( QPen( _fontColor ) );
-			painter.drawText( sizetxt, Qt::AlignVCenter | Qt::AlignLeft, QObject::tr(str) );
+			painter.drawText( sizetxt, Qt::AlignVCenter | Qt::AlignLeft, str );
 		}
 		else
 		{
 			/*
 			QPushButton* pButton = new QPushButton( _pWidget );
 			pButton->setGeometry( box );
-			pButton->setText( QObject::tr( str ) );
+			pButton->setText( str );
 			pButton->connect( pButton, SIGNAL( clicked() ), this, SLOT( SizeClicked() ) );
 
 			_vTitleButtonList.push_back( pButton );
@@ -238,7 +238,7 @@ void	Qt_FileBox::FileView(QPainter& painter, const QRect& box )
 		else
 			sName = _pFile->sName.c_str();
 
-		int nFontWidth = fm.width( QObject::tr( sName ) );
+		int nFontWidth = fm.horizontalAdvance( sName );
 		if (nFontWidth > filebox.width() )
 		{
 			int nMaxLength = sName.length();
@@ -249,12 +249,12 @@ void	Qt_FileBox::FileView(QPainter& painter, const QRect& box )
 				sName.append( "..." );
 				nMaxLength--;
 			}
-			while( fm.width( QObject::tr( sName ) ) >= filebox.width() - 2 );
+			while( fm.horizontalAdvance( sName ) >= filebox.width() - 2 );
 		}
 	
 		//painter.fillRect( textBox, QBrush( Qt::blue ) );
 		painter.setPen( QPen( LinMGlobal::GetColor( _pFile->tColor.font ) ) );
-		painter.drawText(filebox, Qt::AlignVCenter | Qt::AlignLeft, QObject::tr( sName ) );
+		painter.drawText(filebox, Qt::AlignVCenter | Qt::AlignLeft, sName );
 	}
 	else
 	{
@@ -263,7 +263,7 @@ void	Qt_FileBox::FileView(QPainter& painter, const QRect& box )
 		if ( !_bTitleButton )
 		{
 			painter.setPen( QPen( _fontColor ) );
-			painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, QObject::tr(str) );
+			painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, str );
 		}
 		else
 		{
@@ -283,7 +283,7 @@ void	Qt_FileBox::ExtView( QPainter& painter, QRect& box )
 		QFontMetrics 	fm( _pParent->font() );
 		QString			sExt( _pFile->Ext().c_str() );
 		
-		int nFontWidth = fm.width( QObject::tr( sExt ) );
+		int nFontWidth = fm.horizontalAdvance( sExt );
 		if (nFontWidth > box.width() )
 		{
 			int nMaxLength = sExt.length();
@@ -294,7 +294,7 @@ void	Qt_FileBox::ExtView( QPainter& painter, QRect& box )
 				sExt.append( "..." );
 				nMaxLength--;
 			}
-			while( fm.width( QObject::tr( sExt ) ) >= box.width() - 2 );
+			while( fm.horizontalAdvance( sExt ) >= box.width() - 2 );
 		}
 		
 		painter.setPen( QPen( _lineColor ) );
@@ -303,14 +303,14 @@ void	Qt_FileBox::ExtView( QPainter& painter, QRect& box )
 	
 		box.setX( box.x() + 2 );
 		painter.setPen( QPen( LinMGlobal::GetColor( _pFile->tColor.font ) ) );
-		painter.drawText(box, Qt::AlignVCenter | Qt::AlignLeft, QObject::tr( sExt ) );
+		painter.drawText(box, Qt::AlignVCenter | Qt::AlignLeft, sExt );
 	}
 	/*
 	else
 	{
 		QString		str("Ext");
 		painter.setPen( QPen( _fontColor ) );
-		painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, QObject::tr(str) );
+		painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, str );
 	}
 	*/
 }
@@ -351,7 +351,7 @@ void	Qt_FileBox::AttrView( QPainter& painter, QRect& box )
 		if ( !_bTitleButton )
 		{
 			painter.setPen( QPen( _fontColor ) );
-			painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, QObject::tr(str) );
+			painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, str );
 		}
 		else
 		{
@@ -360,7 +360,7 @@ void	Qt_FileBox::AttrView( QPainter& painter, QRect& box )
 			/*
 			QPushButton* pButton = new QPushButton( _pWidget );
 			pButton->setGeometry( box );
-			pButton->setText( QObject::tr( str ) );
+			pButton->setText( str );
 			pButton->connect( pButton, SIGNAL( clicked() ), this, SLOT( AttrClicked() ) );
 			//pButton->show();
 
@@ -386,7 +386,7 @@ void	Qt_FileBox::DateView( QPainter& painter, QRect& box )
 		if ( !_bTitleButton )
 		{
 			painter.setPen( QPen( _fontColor ) );
-			painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, QObject::tr(str) );
+			painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, str );
 		}
 		else
 		{
@@ -394,7 +394,7 @@ void	Qt_FileBox::DateView( QPainter& painter, QRect& box )
 			/*
 			QPushButton* pButton = new QPushButton( _pWidget );
 			pButton->setGeometry( box );
-			pButton->setText( QObject::tr( str ) );
+			pButton->setText( str );
 			pButton->connect( pButton, SIGNAL( clicked() ), this, SLOT( DateClicked() ) );
 		//	pButton->show();
 
@@ -420,7 +420,7 @@ void	Qt_FileBox::TimeView( QPainter& painter, QRect& box )
 		if ( !_bTitleButton )
 		{
 			painter.setPen( QPen( _fontColor ) );
-			painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, QObject::tr(str) );
+			painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, str );
 		}
 		else
 		{
@@ -428,7 +428,7 @@ void	Qt_FileBox::TimeView( QPainter& painter, QRect& box )
 			qDebug() << "TimeView Title";
 			QPushButton* pButton = new QPushButton( _pWidget );
 			pButton->setGeometry( box );
-			pButton->setText( QObject::tr( str ) );
+			pButton->setText( str );
 			pButton->connect( pButton, SIGNAL( clicked() ), this, SLOT( TimeClicked() ) );
 			//pButton->show();
 
@@ -454,7 +454,7 @@ void	Qt_FileBox::OwnerView( QPainter& painter, QRect& box )
 		}
 		
 		painter.setPen( QPen( _fontColor ) ); // Color
-		painter.drawText(box, Qt::AlignVCenter | Qt::AlignLeft, QObject::tr(sOwner) );
+		painter.drawText(box, Qt::AlignVCenter | Qt::AlignLeft, sOwner );
 	}
 	else
 	{
@@ -463,7 +463,7 @@ void	Qt_FileBox::OwnerView( QPainter& painter, QRect& box )
 		if ( !_bTitleButton )
 		{
 			painter.setPen( QPen( _fontColor ) );
-			painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, QObject::tr(str) );
+			painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, str );
 		}
 		else
 		{
@@ -471,7 +471,7 @@ void	Qt_FileBox::OwnerView( QPainter& painter, QRect& box )
 			/*
 			QPushButton* pButton = new QPushButton( _pWidget );
 			pButton->setGeometry( box );
-			pButton->setText( QObject::tr( str ) );
+			pButton->setText( str );
 			pButton->connect( pButton, SIGNAL( clicked() ), this, SLOT( OwnerClicked() ) );
 			//pButton->show();
 
@@ -497,7 +497,7 @@ void	Qt_FileBox::GroupView( QPainter& painter, QRect& groupBox )
 		}
 		
 		painter.setPen( QPen( _fontColor ) ); // Color
-		painter.drawText(groupBox, Qt::AlignVCenter | Qt::AlignLeft, QObject::tr(sGroup) );
+		painter.drawText(groupBox, Qt::AlignVCenter | Qt::AlignLeft, sGroup );
 	}
 	else
 	{
@@ -506,7 +506,7 @@ void	Qt_FileBox::GroupView( QPainter& painter, QRect& groupBox )
 		if ( !_bTitleButton )
 		{
 			painter.setPen( QPen( _fontColor ) );
-			painter.drawText( groupBox, Qt::AlignVCenter | Qt::AlignLeft, QObject::tr(str) );
+			painter.drawText( groupBox, Qt::AlignVCenter | Qt::AlignLeft, str );
 		}
 		else
 		{
@@ -515,7 +515,7 @@ void	Qt_FileBox::GroupView( QPainter& painter, QRect& groupBox )
 			QPushButton* pButton = new QPushButton( _pWidget );
 			
 			pButton->setGeometry( groupBox );
-			pButton->setText( QObject::tr( str ) );
+			pButton->setText( str );
 			pButton->connect( pButton, SIGNAL( clicked() ), this, SLOT( GroupClicked() ) );
 			//pButton->show();
 
@@ -828,12 +828,12 @@ void Qt_FileBox::slotTitleShow()
 		QPushButton* pButton = new QPushButton( pItem->_pParent );
 			
 		pButton->setGeometry( pItem->_rect );
-		pButton->setText( QObject::tr( pItem->_strTitleName ) );
+		pButton->setText( pItem->_strTitleName );
 
 		QString		strFuncName;
-		strFuncName.sprintf( "%d%sClicked()", QSLOT_CODE, (const char*)pItem->_strTitleName.toAscii() );
+		strFuncName = QString::asprintf( "%d%sClicked()", QSLOT_CODE, pItem->_strTitleName.toLatin1().constData() );
 
-		pButton->connect( pButton, SIGNAL( clicked() ), this, (const char*)strFuncName.toAscii() );
+		pButton->connect( pButton, SIGNAL( clicked() ), this, strFuncName.toLatin1().constData() );
 		pButton->show();
 
 		pItem->_pButton = pButton;

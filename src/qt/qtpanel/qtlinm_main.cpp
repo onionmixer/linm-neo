@@ -25,14 +25,7 @@
 #include <QTextCodec>
 #include <QFont>
 
-#ifdef 	LINM_KDE
-	#include <kglobal.h>
-	#include <kiconloader.h> // kdelibs4-dev
-	#include <kapplication.h>
-	#include <kcmdlineargs.h>
-#endif
-
-#include <qframe.h>
+#include <QFrame>
 
 #include "define.h"
 #include "strutil.h"
@@ -67,9 +60,11 @@ void fontSelect()
 }
 */
 
+#ifndef __LINM_CFGPATH__
 #define 	__LINM_CFGPATH__		"~/.linm"
+#endif
 
-namespace { // 처음 기본 세팅
+namespace { // initial default settings
 
 vector<string> _vCfgFile, _vColFile, _vKeyFile;
 
@@ -92,17 +87,13 @@ static void WriteAllDefaultConfigs(const string& sCfgHome)
 	WriteDefaultConfig(sCfgHome + "syntexset.cfg", SYNTEXSET_CFG_CONTENT);
 }
 
-/// @brief	mls 시작시 초기화 함수
-///
-///  config준비. 설정파일 읽기, 컬러셋 읽기
-/// @return	성공여부 0일때 성공
 bool Initialize()
 {
 	int t;
 	const char *succMsg = "[\033[01;36m SUCCESS \033[0m]";
 	const char *failMsg = "[\033[01;31m  FAIL   \033[0m]";
 	const char *errMsg  = "[\033[01;31m  ERROR  \033[0m]";
-	
+
 	char*	cwd = getcwd(NULL, 0);
 	if (cwd == NULL)
 	{
@@ -123,11 +114,11 @@ bool Initialize()
 	free(cwd);
 
 	string sCfgDefaultPath, sCfgColorPath;
-	
+
 	sCfgDefaultPath = sCfgDefaultPath + __LINM_CFGPATH__ + "/default.cfg";
 	sCfgColorPath = sCfgColorPath + __LINM_CFGPATH__ + "/colorset.cfg";
 
-	{ // Config 준비..
+	{ // Config preparation
 		struct passwd *pw = getpwuid(getuid());
 		{
 			std::string home  = pw->pw_dir;
@@ -136,18 +127,15 @@ bool Initialize()
 			g_tCfg.SetStaticValue("Home", home);
 		}
 
-		// . config dir 지정
 		g_tCfg.SetStaticValue("CfgHome", g_tCfg.GetValue("Static", "Home") + ".linm/");
 		g_tCfg.SetStaticValue("TmpDir", g_tCfg.GetValue("Static", "Home") + ".linm/linm_tmpdir/");
 		g_tColorCfg.Init();
-		
-		// 홈에 .linm를 만든다. mcd treeinfo를 저장하기 위해서도 필요
+
 		mkdir((g_tCfg.GetValue("Static", "Home") + ".linm").c_str(), 0755);
-		// 파일 복사에 필요한 tmp 디렉토리.
 		mkdir((g_tCfg.GetValue("Static", "TmpDir")).c_str(), 0777);
 	}
 
-	{ // 설정 파일 읽기
+	{ // Read config files
 		_vCfgFile.push_back( g_tCfg.GetValue("Static", "CfgHome") + "default.cfg" );
 		_vCfgFile.push_back( sCfgDefaultPath );
 
@@ -164,13 +152,6 @@ bool Initialize()
 				cout << sMsg.c_str();
 				cout << succMsg << endl;
 #endif
-				/*
-				if (cfgfile == sCfgDefaultPath)
-				{
-					string sCmd = "cp " + sCfgDefaultPath + " " + g_tCfg.GetValue("Static", "Home") + ".linm";
-					system(sCmd.c_str());
-				}
-				*/
 				break;
 			}
 			else
@@ -202,11 +183,11 @@ bool Initialize()
 		}
 	}
 
-	{ // 컬러셋 읽기
+	{ // Read colorset
 		if ( g_tCfg.GetValue("Default", "ColorSetFile") != "")
 			_vColFile.push_back( g_tCfg.GetValue("Static", "CfgHome") + g_tCfg.GetValue("Default", "ColorSetFile"));
 		_vColFile.push_back( sCfgColorPath );
-	
+
 		for (t=0; t<(int)_vColFile.size(); t++)
 		{
 			string colfile = _vColFile[t];
@@ -219,13 +200,6 @@ bool Initialize()
 				cout << sMsg.c_str();
 				cout << succMsg << endl;
 #endif
-				/*
-				if (colfile == sCfgColorPath)
-				{
-					string sCmd = "cp " + sCfgColorPath + " " + g_tCfg.GetValue("Static", "Home") + ".linm";
-					system(sCmd.c_str());
-				}
-				*/
 				break;
 			}
 			else
@@ -256,14 +230,14 @@ bool Initialize()
 		}
 	}
 
-	{ // Debuging Setting.
+	{ // Debugging settings
 		string sLogFile;
 	    sLogFile = ttyname(STDOUT_FILENO);
 
 		qDebug("GetTty :: [%s]", sLogFile.c_str());
 		g_Log.SetFile( sLogFile );
 
-		int fd = 0;	
+		int fd = 0;
 		if ((fd = open(sLogFile.c_str(), O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR)) == -1)
 		{
 			printf("Log file open error : %s ", sLogFile.c_str());
@@ -271,17 +245,12 @@ bool Initialize()
 		}
 		else
 		{
-			//dup2(fd, 2); // stderr에 리다이렉션한다.
 			close(fd);
 		}
 	}
 	return true;
 }
 
-/// @brief  Mls keybind파일, mls editor keybind 파일을 읽는다.
-///
-/// MainFrame 안에 KeyBind가 있기 때문에 따로 만듬.
-/// @return keybind 파일 읽기 성공여부.
 bool	Load_KeyFile()
 {
 	int t;
@@ -290,7 +259,7 @@ bool	Load_KeyFile()
 	string	sKeyCfgPath;
 	sKeyCfgPath = sKeyCfgPath + __LINM_CFGPATH__ + "/qtkeyset.cfg";
 
-	{// Key Binding file을 읽는다.
+	{// Read keybinding file
 		if (g_tCfg.GetValue("Default", "QtKeySetFile") != "")
 			_vKeyFile.push_back( g_tCfg.GetValue("Static", "CfgHome") + g_tCfg.GetValue("Default", "QtKeySetFile"));
 		_vKeyFile.push_back( sKeyCfgPath );
@@ -360,29 +329,19 @@ bool	Load_KeyFile()
 }
 
 
-int main( int argc, char ** argv ) 
+int main( int argc, char ** argv )
 {
-	#ifdef 	LINM_KDE
-	KCmdLineArgs::init( argc, argv, "test", "Test" , ki18n("LinM") ,"0.8a" );
-	KApplication app;
-	#else
 	QApplication app( argc, argv );
-	#endif
 
 	QFont       font = QApplication::font();
     font.setPointSize( 10 );
     font.setFamily(QString::fromUtf8("Arial"));
     QApplication::setFont( font );
 
-	QApplication::setGlobalMouseTracking( FALSE );
-
 	try
 	{
-		
-		//app.setDefaultCodec( QTextCodec::codecForName("utf8") );
 		QTextCodec::setCodecForLocale( QTextCodec::codecForName("UTF-8") );
-		QTextCodec::setCodecForTr( QTextCodec::codecForName("UTF-8") );
-		
+
 		if (!Initialize())
 		{
 			QMessageBox::critical( NULL, QObject::tr("Error"), QObject::tr("config file not founed.(~/.linm/*.cfg") );
@@ -397,22 +356,20 @@ int main( int argc, char ** argv )
 
 		PanelToolTip*	pToolTip 	= new PanelToolTip();
 		Qt_MainWindow*	pWin 		= new Qt_MainWindow( pToolTip );
-		
+
 		static Qt_Dialog		tDialog( pWin );
 		static Qt_Progress		tProgress;
 
 		SetDialogProgress( (MlsDialog*)&tDialog, (MlsProgress*)&tProgress);
-		
-		pWin->setCaption( "LinM - 0.8a" );
+
+		pWin->setWindowTitle( "LinM - 0.8a" );
 
 		const QPixmap&	iconLinm = LinMGlobal::GetSmallIcon( "linm" );
-	
+
 		if ( !iconLinm.isNull() )
-			pWin->setIcon( iconLinm );
+			pWin->setWindowIcon( QIcon(iconLinm) );
 
 		pWin->show();
-
-		app.setMainWidget( pWin );
 
 		app.connect(&app, SIGNAL(lastWindowClosed()), &app, SLOT(quit()));
 		app.exec();

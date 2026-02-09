@@ -6,12 +6,9 @@
 #include <QString>
 #include <QTimer>
 #include <QApplication>
-#include <QDesktopWidget>
+#include <QScreen>
 #include <QKeyEvent>
-
-#ifdef 	LINM_KDE
-//	#include <kpixmapeffect.h>
-#endif
+#include <QGuiApplication>
 
 #include "define.h"
 #include "file.h"
@@ -20,8 +17,7 @@
 #include "qt_paneltooltip.h"
 
 PanelToolTip::PanelToolTip( QWidget* parent )
-	: QWidget( parent, 0, Qt::WX11BypassWM
-				/*WType_TopLevel | WStyle_Customize | WX11BypassWM | WStyle_StaysOnTop*/ )
+	: QWidget( parent, Qt::BypassWindowManagerHint )
 {
 	_pFile = NULL;
 
@@ -43,14 +39,18 @@ PanelToolTip::PanelToolTip( QWidget* parent )
 	connect( _pHideTimer, SIGNAL(timeout()), this, SLOT(HideToolTip()) );
 
 	if( _bTranslucency )
-		_pixScreenshot = QPixmap::grabWindow( QApplication::desktop()->winId() );
+	{
+		QScreen *screen = QGuiApplication::primaryScreen();
+		if (screen)
+			_pixScreenshot = screen->grabWindow( 0 );
+	}
 }
 
 PanelToolTip::~PanelToolTip()
 {
 }
 
-void	PanelToolTip::setFile( MLS::File* pFile ) 
+void	PanelToolTip::setFile( MLS::File* pFile )
 {
 	if ( pFile && _pFile != pFile )
 	{
@@ -62,12 +62,12 @@ void	PanelToolTip::setFile( MLS::File* pFile )
 		QString		sInfo;
 		QString		strName = _pFile->sName.c_str();
 		QFontMetrics 	fm( font() );
-		
-		int 		nNameWidth = fm.width( QObject::tr(strName) );
-		
+
+		int 		nNameWidth = fm.horizontalAdvance( strName );
+
 		if (_pFile->uSize >= 1000000000)
 		{
-			sInfo.sprintf( "%s Byte (%.2fG) / %s %s / %s", 	MLSUTIL::toregular( _pFile->uSize ).c_str(), 
+			sInfo = QString::asprintf( "%s Byte (%.2fG) / %s %s / %s", 	MLSUTIL::toregular( _pFile->uSize ).c_str(),
 										(float)_pFile->uSize/1073741824,
 										_pFile->sDate.c_str(),
 										_pFile->sTime.c_str(),
@@ -75,29 +75,29 @@ void	PanelToolTip::setFile( MLS::File* pFile )
 		}
 		else if (_pFile->uSize >= 10000000)
 		{
-			sInfo.sprintf( "%s Byte (%.2fM) / %s %s / %s", MLSUTIL::toregular( _pFile->uSize ).c_str(), 
-													(float)_pFile->uSize/1048576, 
+			sInfo = QString::asprintf( "%s Byte (%.2fM) / %s %s / %s", MLSUTIL::toregular( _pFile->uSize ).c_str(),
+													(float)_pFile->uSize/1048576,
 													_pFile->sDate.c_str(),
 													_pFile->sTime.c_str(),
 													_pFile->sAttr.c_str() );
 		}
 		else
 		{
-			sInfo.sprintf( "%s / %s %s / %s", MLSUTIL::toregular( _pFile->uSize ).c_str(),
+			sInfo = QString::asprintf( "%s / %s %s / %s", MLSUTIL::toregular( _pFile->uSize ).c_str(),
 													_pFile->sDate.c_str(),
 													_pFile->sTime.c_str(),
 													_pFile->sAttr.c_str() );
 		}
 
-		
-		int nInfoWidth = fm.width( sInfo );
+
+		int nInfoWidth = fm.horizontalAdvance( sInfo );
 		int	nWidth = 0;
-		
+
 		if ( nInfoWidth > nNameWidth )
 			nWidth = nInfoWidth + 10;
 		else
 			nWidth = nNameWidth + 10;
-		
+
 		_sInfo1 = strName;
 		_sInfo2 = sInfo;
 
@@ -107,8 +107,8 @@ void	PanelToolTip::setFile( MLS::File* pFile )
 		resize( _rectToolTip.width(), _rectToolTip.height() );
 
 		qDebug( "setFile !!!!!!! resize signal _pShowTimer !!!");
-		_pShowTimer->start( 1500, true );
-		//_bHide = false;
+		_pShowTimer->setSingleShot( true );
+		_pShowTimer->start( 1500 );
 	}
 }
 
@@ -125,28 +125,30 @@ void	PanelToolTip::ShowToolTip()
 
 void	PanelToolTip::HideToolTip()
 {
-	//if ( _bHide )
 	hide();
 	_pShowTimer->stop();
 
 	if( _bTranslucency )
 	{
-		_pixScreenshot = QPixmap::grabWindow( QApplication::desktop()->winId() );
+		QScreen *screen = QGuiApplication::primaryScreen();
+		if (screen)
+			_pixScreenshot = screen->grabWindow( 0 );
 		qDebug("_bTranslucency  ~~~~~~~ HideToolTip !!!!!!!");
 	}
 }
 
 void	PanelToolTip::showEvent( QShowEvent* /*event*/ )
 {
-	if( _nDuration ) //duration 0 -> stay forever
+	if( _nDuration )
 	{
-		_pHideTimer->start( _nDuration, true );	//calls hide()
+		_pHideTimer->setSingleShot( true );
+		_pHideTimer->start( _nDuration );
 	}
 }
 
 void 	PanelToolTip::moveEvent( QMoveEvent * /*event*/ )
 {
-	if( _nDuration ) //duration 0 -> stay forever
+	if( _nDuration )
 	{
 		if ( _pHideTimer->isActive() )
 			_pHideTimer->stop();
@@ -167,32 +169,24 @@ void	PanelToolTip::paintEvent( QPaintEvent* event )
 
 	if( _bTranslucency )
 	{
-		QPixmap		backPixmap;
-		backPixmap.resize( size() );
-		bitBlt( &backPixmap, 0, 0, &_pixScreenshot, x(), y(), width(), height() );
+		QPixmap		backPixmap( size() );
+		QPainter	bltPainter( &backPixmap );
+		bltPainter.drawPixmap( 0, 0, _pixScreenshot, x(), y(), width(), height() );
+		bltPainter.end();
 
-/*
-		#ifdef 	LINM_KDE
-		QPixmap background( backPixmap );
-		KPixmapEffect::fade( background, 0.8, backgroundColor() );
-		painter.drawPixmap( 0, 0, background );
-		#else
-*/
 		painter.drawPixmap( 0, 0, backPixmap );
-//		#endif
 	}
-	
+
 	painter.setPen( _lineColor );
-	//painter.setBrush( QBrush( _backColor, Qt::SolidPattern )  );
 
 	QRect	rectLine = QRect( rect.x()+1, rect.y()+1, rect.width() - 2, rect.height() - 2 );
-	painter.drawRoundRect( rectLine, 3 );
+	painter.drawRoundedRect( rectLine, 3, 3 );
 
 	painter.setPen( QPen( _font1Color ) ); // Color
-	painter.drawText(5, fm.height(), QObject::tr( _sInfo1 ) );
+	painter.drawText(5, fm.height(), _sInfo1 );
 
 	painter.setPen( QPen( _font2Color ) ); // Color
-	painter.drawText(5, fm.height()*2, QObject::tr( _sInfo2 ) );
+	painter.drawText(5, fm.height()*2, _sInfo2 );
 	painter.end();
 
 	qDebug("PanelToolTip :: Painter [%d] [%d] [%d] [%d]", x(), y(), width(), height() );

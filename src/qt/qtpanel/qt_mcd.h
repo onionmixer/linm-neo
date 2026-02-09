@@ -1,7 +1,8 @@
 #ifndef __QT_MCD_H__
 #define __QT_MCD_H__
 
-#include <Q3ListViewItem>
+#include <QTreeWidget>
+#include <QTreeWidgetItem>
 
 #include "file.h"
 #include "reader.h"
@@ -11,7 +12,7 @@ using namespace MLS;
 class 	Qt_Mcd;
 class	Qt_Panel;
 
-class	Qt_McdItem : public Q3ListViewItem
+class	Qt_McdItem : public QTreeWidgetItem
 {
 public:
 	Qt_McdItem( Qt_McdItem* pParent, Qt_Mcd* pMcd, MLS::File& tFile );
@@ -29,7 +30,7 @@ private:
 	MLS::File	_tFile;
 };
 
-class Qt_Mcd : public Q3ListView
+class Qt_Mcd : public QTreeWidget
 {
 Q_OBJECT
 
@@ -47,13 +48,13 @@ public:
 	void	resizeEvent ( QResizeEvent * );
 
 protected slots:
-	void	SetPanelDirChg ( Q3ListViewItem * item );
+	void	SetPanelDirChg ( QTreeWidgetItem * item, int column );
 
 private:
 	MLS::Reader*	_pReader;
 	bool			_bHidden;
 	Qt_Panel*		_pPanel;
-	
+
 };
 
 #endif // __QT_MCD_H__

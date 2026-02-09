@@ -1,4 +1,5 @@
 add_subdirectory(ncurses)
+add_subdirectory(qt)
 
 include_directories(${CMAKE_SOURCE_DIR}/lib
         ${CMAKE_SOURCE_DIR}/panel
