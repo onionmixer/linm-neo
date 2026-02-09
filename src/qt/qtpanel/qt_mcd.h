@@ -20,7 +20,6 @@ public:
 
 	MLS::File*	GetFile();
 
-	QString 	text( int column ) const;
 	bool		OpenChk( const string& sPath, bool bChkSubDir, bool bSubDirAll );
 	void 		setOpen( bool bOpen );
 

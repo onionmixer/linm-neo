@@ -17,18 +17,23 @@ if (UNIX)
     add_custom_command(OUTPUT syntexset.cfg
             COMMAND sed "s%@LINM_VERSION@%${VERSION}%" ${CMAKE_CURRENT_SOURCE_DIR}/syntexset.cfg.in > ${CMAKE_CURRENT_BINARY_DIR}/syntexset.cfg )
 
+    add_custom_command(OUTPUT qtkeyset.cfg
+            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/qtkeyset.cfg ${CMAKE_CURRENT_BINARY_DIR}/qtkeyset.cfg
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/qtkeyset.cfg)
+
     add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/default_config.h
             COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/generate_default_config.sh
                     ${CMAKE_CURRENT_BINARY_DIR}/default.cfg
                     ${CMAKE_CURRENT_BINARY_DIR}/colorset.cfg
                     ${CMAKE_CURRENT_BINARY_DIR}/keyset.cfg
                     ${CMAKE_CURRENT_BINARY_DIR}/syntexset.cfg
+                    ${CMAKE_CURRENT_BINARY_DIR}/qtkeyset.cfg
                     ${CMAKE_BINARY_DIR}/default_config.h
-            DEPENDS default.cfg colorset.cfg keyset.cfg syntexset.cfg
+            DEPENDS default.cfg colorset.cfg keyset.cfg syntexset.cfg qtkeyset.cfg
                     ${CMAKE_CURRENT_SOURCE_DIR}/generate_default_config.sh)
 
     add_custom_target(linmScript DEPENDS linm.sh linm.csh linm_alias.csh linm_alias.sh)
-    add_custom_target(linmConfig DEPENDS default.cfg colorset.cfg keyset.cfg syntexset.cfg
+    add_custom_target(linmConfig DEPENDS default.cfg colorset.cfg keyset.cfg syntexset.cfg qtkeyset.cfg
                       ${CMAKE_BINARY_DIR}/default_config.h)
 
     install(FILES
@@ -36,6 +41,7 @@ if (UNIX)
                 ${CMAKE_CURRENT_BINARY_DIR}/default.cfg
                 ${CMAKE_CURRENT_BINARY_DIR}/keyset.cfg
                 ${CMAKE_CURRENT_BINARY_DIR}/syntexset.cfg
+                ${CMAKE_CURRENT_BINARY_DIR}/qtkeyset.cfg
             DESTINATION ${__LINM_CFGPATH__} )
 
     install(FILES

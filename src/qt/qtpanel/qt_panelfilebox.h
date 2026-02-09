@@ -124,6 +124,7 @@ protected:
 	void	AttrView( QPainter& painter, QRect& box );
 	void	DateView( QPainter& painter, QRect& box );
 	void	TimeView( QPainter& painter, QRect& box );
+	void	DateTimeView( QPainter& painter, QRect& box );
 	void	OwnerView( QPainter& painter, QRect& box );
 	void	GroupView( QPainter& painter, QRect& box );
 

@@ -305,14 +305,16 @@ void	Qt_FileBox::ExtView( QPainter& painter, QRect& box )
 		painter.setPen( QPen( LinMGlobal::GetColor( _pFile->tColor.font ) ) );
 		painter.drawText(box, Qt::AlignVCenter | Qt::AlignLeft, sExt );
 	}
-	/*
 	else
 	{
 		QString		str("Ext");
-		painter.setPen( QPen( _fontColor ) );
-		painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, str );
+
+		if ( !_bTitleButton )
+		{
+			painter.setPen( QPen( _fontColor ) );
+			painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, str );
+		}
 	}
-	*/
 }
 
 void	Qt_FileBox::IconView( QPainter& painter, QRect& iconBox )
@@ -438,6 +440,31 @@ void	Qt_FileBox::TimeView( QPainter& painter, QRect& box )
 	}
 }
 
+void	Qt_FileBox::DateTimeView( QPainter& painter, QRect& box )
+{
+	if ( !_bTitle )
+	{
+		if ( !_pFile ) return;
+
+		QString sDateTime = QString("%1 %2").arg(
+			QString::fromStdString(_pFile->sDate),
+			QString::fromStdString(_pFile->sTime));
+
+		painter.setPen( QPen( _fontColor ) );
+		painter.drawText(box, Qt::AlignVCenter | Qt::AlignLeft, sDateTime );
+	}
+	else
+	{
+		QString		str("Date");
+
+		if ( !_bTitleButton )
+		{
+			painter.setPen( QPen( _fontColor ) );
+			painter.drawText( box, Qt::AlignVCenter | Qt::AlignLeft, str );
+		}
+	}
+}
+
 void	Qt_FileBox::OwnerView( QPainter& painter, QRect& box )
 {
 	if ( !_bTitle )
@@ -534,6 +561,7 @@ void	Qt_FileBox::DrawTabBox( QPainter& painter, const string& str, QRect& viewRe
 	if ( str == "Attr" ) AttrView( painter, viewRect );
 	if ( str == "Date" ) DateView( painter, viewRect );
 	if ( str == "Time" ) TimeView( painter, viewRect );
+	if ( str == "DateTime" ) DateTimeView( painter, viewRect );
 	if ( str == "Owner" ) OwnerView( painter, viewRect );
 	if ( str == "Group" ) GroupView( painter, viewRect );
 }
@@ -707,7 +735,10 @@ void	Qt_FileBox::DrawObject()
 			vTabView.push_back( TabViewInfo( "Ext", (_nDefFontSize * 4 ) ) );
 		}
 		else
+		{
 			vTabView.push_back( TabViewInfo( "File" ) );
+			vTabView.push_back( TabViewInfo( "Ext", (_nDefFontSize * 4 ) ) );
+		}
 	}
 	else if ( width <= 400 )
 	{
@@ -721,6 +752,7 @@ void	Qt_FileBox::DrawObject()
 		else
 		{
 			vTabView.push_back( TabViewInfo( "File" ) );
+			vTabView.push_back( TabViewInfo( "Ext", (_nDefFontSize * 4 ) ) );
 			vTabView.push_back( TabViewInfo( "Size", (_nDefFontSize * 11 ) ) );
 		}
 	}
@@ -736,10 +768,10 @@ void	Qt_FileBox::DrawObject()
 		else
 		{
 			vTabView.push_back( TabViewInfo( "File" ) );
+			vTabView.push_back( TabViewInfo( "Ext", (_nDefFontSize * 4 ) ) );
 			vTabView.push_back( TabViewInfo( "Size", (_nDefFontSize * 11 ) ) );
 		}
-		vTabView.push_back( TabViewInfo( "Date", (_nDefFontSize * 9 ) ) );
-		vTabView.push_back( TabViewInfo( "Time", (_nDefFontSize * 6 ) ) );
+		vTabView.push_back( TabViewInfo( "DateTime", (_nDefFontSize * 14 ) ) );
 	}
 	else if ( width <= 650 )
 	{
@@ -753,11 +785,11 @@ void	Qt_FileBox::DrawObject()
 		else
 		{
 			vTabView.push_back( TabViewInfo( "File" ) );
+			vTabView.push_back( TabViewInfo( "Ext", (_nDefFontSize * 4 ) ) );
 			vTabView.push_back( TabViewInfo( "Size", (_nDefFontSize * 11 ) ) );
 		}
 
-		vTabView.push_back( TabViewInfo( "Date", (_nDefFontSize * 9 ) ) );
-		vTabView.push_back( TabViewInfo( "Time", (_nDefFontSize * 6 ) ) );
+		vTabView.push_back( TabViewInfo( "DateTime", (_nDefFontSize * 14 ) ) );
 		vTabView.push_back( TabViewInfo( "Attr", (_nDefFontSize * 11 ) ) );
 	}
 	else
@@ -772,10 +804,10 @@ void	Qt_FileBox::DrawObject()
 		else
 		{
 			vTabView.push_back( TabViewInfo( "File" ) );
+			vTabView.push_back( TabViewInfo( "Ext", (_nDefFontSize * 4 ) ) );
 			vTabView.push_back( TabViewInfo( "Size", (_nDefFontSize * 11 ) ) );
 		}
-		vTabView.push_back( TabViewInfo( "Date", (_nDefFontSize * 9 ) ) );
-		vTabView.push_back( TabViewInfo( "Time", (_nDefFontSize * 6 ) ) );
+		vTabView.push_back( TabViewInfo( "DateTime", (_nDefFontSize * 14 ) ) );
 		vTabView.push_back( TabViewInfo( "Attr", (_nDefFontSize * 11 ) ) );
 		vTabView.push_back( TabViewInfo( "Owner", (_nDefFontSize * 10 ) ) );
 		vTabView.push_back( TabViewInfo( "Group", (_nDefFontSize * 10 ) ) );

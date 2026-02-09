@@ -36,6 +36,7 @@ public:
 protected slots:
 	void	PanelInsert();
 	void	PanelRemove();
+	void	PanelCloseTab( int index );
 
 protected:
 	void	keyPressEvent( QKeyEvent* event );

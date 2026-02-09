@@ -10,6 +10,7 @@
 Qt_McdItem::Qt_McdItem( Qt_McdItem* pParent, Qt_Mcd* pMcd, MLS::File& tFile ):
 	QTreeWidgetItem( pParent ), _pMcd( pMcd ), _tFile( tFile )
 {
+	setText( 0, QString::fromStdString( tFile.sName ) );
 	if ( tFile.bDir && !tFile.isExecute() )
 		setIcon( 0, QIcon(LinMGlobal::GetSmallIcon( "folder-locked" )) );
 	else
@@ -19,6 +20,7 @@ Qt_McdItem::Qt_McdItem( Qt_McdItem* pParent, Qt_Mcd* pMcd, MLS::File& tFile ):
 Qt_McdItem::Qt_McdItem( Qt_Mcd* pMcd, MLS::File& tFile ):
 	QTreeWidgetItem( (QTreeWidget*)pMcd ), _pMcd( pMcd ), _tFile( tFile )
 {
+	setText( 0, QString::fromStdString( tFile.sName ) );
 }
 
 MLS::File*	Qt_McdItem::GetFile()
@@ -26,12 +28,6 @@ MLS::File*	Qt_McdItem::GetFile()
 	return &_tFile;
 }
 
-QString 	Qt_McdItem::text( int column ) const
-{
-	if ( column == 0 )
-		return QObject::tr( _tFile.sName.c_str() );
-	return QString();
-}
 
 bool		Qt_McdItem::OpenChk( const string& sPath, bool bChkSubDir, bool bSubDirAll )
 {

@@ -40,23 +40,17 @@ Qt_TabPanel::Qt_TabPanel( 	PanelToolTip* 	pToolTip,
 	PanelInsert();
 
 	QToolButton*	addButton = new QToolButton( this );
-	QToolButton*	delButton = new QToolButton( this );
-
 	addButton->setFocusPolicy( Qt::NoFocus );
-	delButton->setFocusPolicy( Qt::NoFocus );
 
 	const QIcon& iconset = LinMGlobal::GetIconSet( "list-add" );
 	addButton->setIcon( iconset );
 	setCornerWidget( addButton, Qt::TopLeftCorner );
 
-	const QIcon& iconset2 = LinMGlobal::GetIconSet( "list-remove" );
-	delButton->setIcon( iconset2 );
-	setCornerWidget( delButton, Qt::TopRightCorner );
-
 	setTabPosition( QTabWidget::South  );
+	setTabsClosable( true );
 
 	connect( addButton, SIGNAL( clicked() ), this, SLOT( PanelInsert() ) );
-	connect( delButton, SIGNAL( clicked() ), this, SLOT( PanelRemove() ) );
+	connect( this, SIGNAL( tabCloseRequested(int) ), this, SLOT( PanelCloseTab(int) ) );
 
 	qDebug() << "Qt_TabPanel::Qt_TabPanel End";
 }
@@ -162,6 +156,22 @@ void		Qt_TabPanel::PanelRemove()
 		if ( pPanelMcd )
 		{
 			removeTab( indexOf(pPanelMcd) );
+			pPanelMcd->close();
+			delete pPanelMcd;
+			pPanelMcd = 0;
+		}
+	}
+}
+
+void		Qt_TabPanel::PanelCloseTab( int index )
+{
+	if ( count() > 1 )
+	{
+		QMcdPanel*	pPanelMcd = (QMcdPanel*)widget( index );
+
+		if ( pPanelMcd )
+		{
+			removeTab( index );
 			pPanelMcd->close();
 			delete pPanelMcd;
 			pPanelMcd = 0;

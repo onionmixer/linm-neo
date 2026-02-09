@@ -176,6 +176,10 @@ void	PanelToolTip::paintEvent( QPaintEvent* event )
 
 		painter.drawPixmap( 0, 0, backPixmap );
 	}
+	else
+	{
+		painter.fillRect( rect, _backColor );
+	}
 
 	painter.setPen( _lineColor );
 

@@ -295,8 +295,8 @@ bool	Load_KeyFile()
 		if (t==(int)_vKeyFile.size())
 		{
 			string sCfgHome = g_tCfg.GetValue("Static", "CfgHome");
-			WriteDefaultConfig(sCfgHome + "keyset.cfg", KEYSET_CFG_CONTENT);
-			string sGenKey = sCfgHome + "keyset.cfg";
+			WriteDefaultConfig(sCfgHome + "qtkeyset.cfg", QTKEYSET_CFG_CONTENT);
+			string sGenKey = sCfgHome + "qtkeyset.cfg";
 			if (g_tKeyCfg.Load(sGenKey))
 			{
 				g_tCfg.SetStaticValue("KeyFile", sGenKey);

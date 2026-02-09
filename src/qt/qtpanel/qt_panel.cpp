@@ -393,11 +393,12 @@ void 	Qt_Panel::scrollbarChg()
 			_uCur = (_pScroolBar->value()-1) * (_nCol*_nRow) + (_uBefCur % (_nCol*_nRow));
 		else
 			_uCur = _uBefCur % (_nCol*_nRow);
-		
+
 		if ( _uCur >= _vDirFiles.size() )
 			_uCur = _vDirFiles.size() - 1;
-	
+
 		qDebug( "scrollbarChg() Aft [%d]", _uCur );
+		_bAllDraw = true;
 		update();
 	}
 	else

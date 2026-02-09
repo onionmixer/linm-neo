@@ -121,7 +121,9 @@ QPixmap LinMGlobal::GetSmallIcon( MLS::File* pFile )
 		QPixmap pm;
 		if ( !QPixmapCache::find("unknown", &pm) )
 		{
-			pm.load( strIconName + ".png" );
+			QIcon icon = QIcon::fromTheme("unknown");
+			if ( !icon.isNull() )
+				pm = icon.pixmap( 16, 16 );
 			QPixmapCache::insert("unknown", pm);
 		}
 		return pm;
@@ -139,7 +141,9 @@ QPixmap LinMGlobal::GetSmallIcon( MLS::File* pFile )
 	QPixmap pm;
 	if ( !QPixmapCache::find(strIconName, &pm) )
 	{
-		pm.load( strIconName + ".png" );
+		QIcon icon = QIcon::fromTheme(strIconName);
+		if ( !icon.isNull() )
+			pm = icon.pixmap( 16, 16 );
 		QPixmapCache::insert(strIconName, pm);
 	}
 	return pm;
@@ -155,7 +159,9 @@ QPixmap LinMGlobal::GetSmallIcon( const QString& strIconName )
 
 	if ( !QPixmapCache::find(strTmp, &pm) )
 	{
-		pm.load( strIconName + ".png" );
+		QIcon icon = QIcon::fromTheme(strIconName);
+		if ( !icon.isNull() )
+			pm = icon.pixmap( 16, 16 );
 		QPixmapCache::insert(strTmp, pm);
 	}
 	return pm;
@@ -163,7 +169,7 @@ QPixmap LinMGlobal::GetSmallIcon( const QString& strIconName )
 
 QIcon	LinMGlobal::GetIconSet( const QString& strIconName )
 {
-	return QIcon( strIconName );
+	return QIcon::fromTheme( strIconName );
 }
 
 QColor	LinMGlobal::GetColor( int nNum )
