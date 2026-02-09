@@ -111,6 +111,10 @@ tar, tar.gz, gz, bz2, tar.bz2, rpm, zip, deb, alz, jar, rar, iso
 | `Ctrl+G` | Go to line |
 | `Alt+F` / `Alt+E` | Go to first / last line |
 
+## Homepage
+
+https://github.com/onionmixer/linm-neo
+
 ## License
 
 LinM is distributed under the GNU General Public License Version 3.
