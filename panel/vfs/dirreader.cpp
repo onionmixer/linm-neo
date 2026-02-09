@@ -78,7 +78,10 @@ string	GetCurrentPath(void)
 	{
 		// 현재 디렉토리 읽기 오류면 home 디렉토리 지정
 		struct passwd *pw = getpwuid(getuid()); // getuid이냐 geteuid냐...;
-		sPath = sPath + pw->pw_dir + '/';
+		if (pw && pw->pw_dir)
+			sPath = sPath + pw->pw_dir + '/';
+		else
+			sPath = "/";
 	}
 	return sPath;
 }
@@ -131,7 +134,7 @@ string DirReader::GetRealPath(const string& str) const
 			sHome += '/';
 			string sTmp1 = sPath.substr(1);
 			string sTmp2 = "";
-			if (sTmp1.find('/') == string::npos)
+			if (sTmp1.find('/') != string::npos)
 				sTmp2 = sTmp1.substr(sTmp1.find('/')+1);
 			sPath = sHome + sTmp2;
 		}
@@ -139,12 +142,13 @@ string DirReader::GetRealPath(const string& str) const
 		{	
 			string sTmp1 = sPath.substr(1);
 			string sTmp2, sTmp3;
-			if (sTmp1.find('/') == string::npos)
+			if (sTmp1.find('/') != string::npos)
+			{
 				sTmp2 = sTmp1.substr(0, sTmp1.find('/'));
+				sTmp3 = sTmp1.substr(sTmp1.find('/')+1);
+			}
 			else
 				sTmp2 = sTmp1;
-			if (sTmp1.find('/') == string::npos)
-				sTmp3 = sTmp1.substr(sTmp1.find('/')+1);
 			struct passwd *pw = getpwnam(sTmp2.c_str());
 			if (pw == NULL) return "";
 			string sHome = pw->pw_dir;
@@ -359,6 +363,7 @@ bool	DirReader::Copy(Selection&	tSelection, const string& sTargetPath, Selection
 	ullong	uLastSize = 0, uViewCount=1, uPsize=0, uCsize = 0;
 	
 	struct stat src_stat, tar_stat;
+	memset(&tar_stat, 0, sizeof(tar_stat));
 
 	char buf[65536];
 
@@ -587,7 +592,7 @@ askagain:
 		
 		if (fp && out)
 		{
-			while( !feof(fp) )
+			for(;;)
 			{
 				if (tProgress.isExit())
 				{
@@ -595,14 +600,21 @@ askagain:
 					if (YNBox(_("Warning"), _("Do you want to stop copy operation?"), false)==true)
 					{
 						remove( sTargetName.c_str() );
+						fclose(out);
+						fclose(fp);
 						bReturn = false;
 						goto halt;
 					}
 					tProgress.Start();
 				}
-				
+
 				uLastSize = fread(buf, 1, sizeof(buf), fp);
-				fwrite(buf, 1, uLastSize, out);
+				if (uLastSize == 0) break;
+				if (fwrite(buf, 1, uLastSize, out) != uLastSize)
+				{
+					LOG("fwrite error: %s", strerror(errno));
+					break;
+				}
 
 				uCsize +=uLastSize;
 				uPsize +=uLastSize;
@@ -618,8 +630,10 @@ askagain:
 		}
 		else
 		{
+			if (fp) fclose(fp);
+			if (out) fclose(out);
 			tProgress.End();
-			if (YNBox(_("Error"), _("File access error, continue?"), false) == false) 
+			if (YNBox(_("Error"), _("File access error, continue?"), false) == false)
 			{
 				bReturn = false;
 				break;
@@ -663,7 +677,8 @@ bool	DirReader::Move(Selection&	tSelection, const string& sTargetPath, Selection
 	string 	sSize = toregular(uFileSize), sRestSize;
 
 	struct 	stat src_stat, tar_stat;
-		
+	memset(&tar_stat, 0, sizeof(tar_stat));
+	
 	//ostringstream count;
 	ullong uViewCount=1, uPsize=0, uCsize;	
 

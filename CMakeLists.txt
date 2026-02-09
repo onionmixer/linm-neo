@@ -4,8 +4,9 @@ project (linm)
 set(PACKAGE "linm")
 set(VERSION "0.9.1")
 set(CMAKE_CXX_STANDARD 11)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wp,-w")
+find_package(PkgConfig)
 
 # where to look first for cmake modules, before ${CMAKE_ROOT}/Modules/ is checked
 set(CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/cmake/Modules)
@@ -45,10 +46,14 @@ find_package( Threads )
 #    message( STATUS "BOOST LIBS : ${Boost_LIBRARIES}")
 #endif()
 
+CHECK_INCLUDE_FILES(dirent.h HAVE_DIRENT_H)
 CHECK_INCLUDE_FILES(errno.h HAVE_ERRNO_H)
 CHECK_INCLUDE_FILES(fcntl.h HAVE_FCNTL_H)
 
-check_function_exists (alloca HAVE_ALLOCA)
+include(CheckSymbolExists)
+check_symbol_exists(alloca "alloca.h" HAVE_ALLOCA)
+check_function_exists (getcwd HAVE_GETCWD)
+check_function_exists (getpagesize HAVE_GETPAGESIZE)
 check_function_exists (asprintf HAVE_ASPRINTF)
 
 CHECK_INCLUDE_FILES(alloca.h HAVE_ALLOCA_H)
@@ -59,14 +64,14 @@ check_function_exists (CFPreferencesCopyAppValue HAVE_CFPREFERENCESCOPYAPPVALUE)
 
 CHECK_INCLUDE_FILES (curses.h HAVE_CURSES_H)
 
-check_function_exists (getopt getopt_long HAVE_DECL_GETOPT)
+check_function_exists (getopt HAVE_DECL_GETOPT)
 
 check_function_exists (_snprintf HAVE_DECL__SNPRINTF)
 check_function_exists (_snwprintf HAVE_DECL__SNWPRINTF)
 
 CHECK_INCLUDE_FILES(argz.h HAVE_ARGZ_H)
 
-check_function_exists (vprintf HAVE_DOPRNT)
+check_function_exists (_doprnt HAVE_DOPRNT)
 check_function_exists (fwprintf HAVE_FWPRINTF)
 check_function_exists (getegid HAVE_GETEGID)
 check_function_exists (geteuid HAVE_GETEUID)
@@ -80,12 +85,11 @@ check_function_exists (gettimeofday HAVE_GETTIMEOFDAY)
 check_function_exists (getuid HAVE_GETUID)
 
 check_function_exists (grantpt HAVE_GRANTPT)
-check_function_exists (intmax_t HAVE_INTMAX_T)
+CHECK_TYPE_SIZE (intmax_t HAVE_INTMAX_T)
 CHECK_INCLUDE_FILES (inttypes.h HAVE_INTTYPES_H)
 CHECK_INCLUDE_FILES (inttypes.h HAVE_INTTYPES_H_WITH_UINTMAX)
 CHECK_INCLUDE_FILES (langinfo.h HAVE_LANGINFO_CODESET)
 
-CHECK_LIBRARY_EXISTS (pt "" "" "HAVE_LIBPT")
 CHECK_INCLUDE_FILES (pthread.h PTHREAD_ENABLE)
 CHECK_INCLUDE_FILES (limits.h HAVE_LIMITS_H)
 
@@ -94,7 +98,7 @@ CHECK_INCLUDE_FILES ("locale.h" HAVE_LOCALE_H)
 
 CHECK_TYPE_SIZE("long double" HAVE_LONG_DOUBLE)
 CHECK_TYPE_SIZE("long long" HAVE_LONG_LONG)
-CHECK_TYPE_SIZE("lstat" HAVE_LSTAT_EMPTY_STRING_BUG)
+set(HAVE_LSTAT_EMPTY_STRING_BUG 0)
 
 check_function_exists (malloc HAVE_MALLOC)
 CHECK_INCLUDE_FILES (malloc.h HAVE_MALLOC_H)
@@ -112,13 +116,16 @@ CHECK_INCLUDE_FILES (nl_types.h HAVE_NL_TYPES_H)
 check_function_exists (poll HAVE_POLL)
 check_function_exists (posix_openpt HAVE_POSIX_OPENPT)
 check_function_exists (printf HAVE_POSIX_PRINTF)
+# POSIX printf with positional args is always supported on modern glibc
 
 check_function_exists (putenv HAVE_PUTENV)
 check_function_exists (select HAVE_SELECT)
 check_function_exists (setenv HAVE_SETENV)
 check_function_exists (setlocale HAVE_SETLOCALE)
 check_function_exists (snprintf HAVE_SNPRINTF)
-check_function_exists (stat HAVE_STAT_EMPTY_STRING_BUG)
+set(HAVE_STAT_EMPTY_STRING_BUG 0)
+set(STDC_HEADERS 1)
+set(TIME_WITH_SYS_TIME 1)
 
 CHECK_INCLUDE_FILES (stdbool.h HAVE_STDBOOL_H)
 CHECK_INCLUDE_FILES (stddef.h HAVE_STDDEF_H)
@@ -197,25 +204,25 @@ endif()
 
 ########### set configure file
 
-option(LINM_CFGPATH "set configure file install path. (default: '${CMAKE_INSTALL_PREFIX}/etc/linm')")
+set(LINM_CFGPATH "" CACHE PATH "set configure file install path. (default: '${CMAKE_INSTALL_PREFIX}/etc/linm')")
 
 if(LINM_CFGPATH)
     set(__LINM_CFGPATH__ "${LINM_CFGPATH}")
 else()
     set(__LINM_CFGPATH__ "${CMAKE_INSTALL_PREFIX}/etc/linm")
-endif(LINM_CFGPATH)
+endif()
 
 message( STATUS "Option - configure path : '${__LINM_CFGPATH__}'" )
 
 ########### set bin path
 
-option(LINM_BINPATH "set binary file install path. (default: '${CMAKE_INSTALL_PREFIX}/bin/linm')")
+set(LINM_BINPATH "" CACHE PATH "set binary file install path. (default: '${CMAKE_INSTALL_PREFIX}/bin/linm')")
 
 if(LINM_BINPATH)
     set(__LINM_BINPATH__ "${LINM_BINPATH}")
 else()
     set(__LINM_BINPATH__ "${CMAKE_INSTALL_PREFIX}/bin/linm")
-endif(LINM_BINPATH)
+endif()
 
 message( STATUS "Option - configure path : '${__LINM_CFGPATH__}'" )
 
@@ -238,13 +245,13 @@ else()
     find_program(TAR tar)
 
     if (GTAR)
-        set(TARGNAME "gtar")
+        set(TARNAME "gtar")
     else()
-        set(TARGNAME "tar")
+        set(TARNAME "tar")
     endif(GTAR)
 endif(TAR_FILE_NAME)
 
-message(  STATUS  "Option - tar or gtar program name : '${TARGNAME}'" )
+message(  STATUS  "Option - tar or gtar program name : '${TARNAME}'" )
 
 ########### find ncurses library
 
@@ -252,7 +259,7 @@ find_library(CURSES_LIB curses)
 find_library(NCURSES_LIB ncurses)
 find_library(NCURSESW_LIB ncursesw)
 
-if(NOT NCURSESW_LIB AND NOT NCURSES_LIB AND NOT NCURSESW_LIB)
+if(NOT NCURSESW_LIB AND NOT NCURSES_LIB AND NOT CURSES_LIB)
     message("")
     message("Need to the ncurces library.")
     message("")
@@ -280,18 +287,17 @@ if( ENABLE_SFTP )
         set(OPENSSL_ROOT_DIR /usr/local/openssl)
     endif()
 
-    include(FindOpenSSL)
+    find_package(OpenSSL)
 
-    find_library(SOCKET socket)
-    find_library(MLIB ceil)
-
-    include(FindPkgConfig)
-    if ( PKG_CONFIG_EXECUTABLE )
+    if ( PKG_CONFIG_FOUND )
         pkg_check_modules(LIBSSH2 REQUIRED libssh2>=1.8)
-        find_library(LIBSSH2 ssh2 PATHS ${LIBSSH2_LIBRARY_DIRS})
-    else ( PKG_CONFIG_EXECUTABLE )
-        find_library(LIBSSH2_LIBRARIES ssh2)
-    endif( PKG_CONFIG_EXECUTABLE )
+        find_library(LIBSSH2_LIBRARY ssh2 PATHS ${LIBSSH2_LIBRARY_DIRS})
+    else()
+        find_library(LIBSSH2_LIBRARY ssh2)
+        if ( LIBSSH2_LIBRARY )
+            set(LIBSSH2_LIBRARIES ${LIBSSH2_LIBRARY})
+        endif()
+    endif()
 
     message(STATUS "Option - SFTP protocol : ON")
 
@@ -313,10 +319,17 @@ endif()
 option(ENABLE_SAMBA "Enable support for Microsoft SMB protocol. (default: OFF)")
 if( ENABLE_SAMBA )
     message(STATUS "Option - SMB protocol : ON")
-    find_library(SMBCLIENT_FOUND smbclient)
+    if ( PKG_CONFIG_FOUND )
+        pkg_check_modules(SMBCLIENT smbclient)
+    endif()
     if ( SMBCLIENT_FOUND )
         set(__LINM_SAMBA_USE__ ON)
-    endif( SMBCLIENT_FOUND )
+    else()
+        find_library(SMBCLIENT_FOUND smbclient)
+        if ( SMBCLIENT_FOUND )
+            set(__LINM_SAMBA_USE__ ON)
+        endif()
+    endif()
 else()
     message(STATUS "Option - SMB protocol : OFF")
 endif()

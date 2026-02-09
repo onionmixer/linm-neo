@@ -1,70 +1,72 @@
   LinM is a clone of Mdir, the famous file manager from the MS-DOS age.
-  LinM inherits the keyboard shorcuts and the screen layout from Mdir 
-  to maximize user-friendliness. 
-  
+  LinM inherits the keyboard shortcuts and the screen layout from Mdir
+  to maximize user-friendliness.
+
   For bug reports, comments and questions,
   please email to la9527@daum.net or eunseo.choi@gmail.com.
 
 * Installation Guide
 
    System Requirements
-   
-    * ncurses (http://ftp.gnu.org/pub/gnu/ncurses/) (ver 5.3 or higher)
-	  (http://www.gnu.org/software/ncurses/ncurses.html)	
-	  
-    * openssl (http://www.openssl.org) (ver 0.9.6 or higher)
-   
-    * samba (http://www.samba.org) (ver 3.0.0 or higher)
-      
-   Note: Linm will try to link ncuresew first, and, if failed, ncurses next.
-         ncursesw is for utf-8 encoding.
 
-    # ./configure -prefix=PATH
-    # ./make install
+    * cmake (version 3.10 or higher)
 
-    To have a shell prompt returned where you end LinM, 
-    you need to re-login after installation.
-       
-    For more options for ./configure, 
+    * ncurses / ncursesw (version 5.3 or higher)
+      (http://www.gnu.org/software/ncurses/ncurses.html)
+      ncursesw is preferred for UTF-8 encoding support.
 
-    # ./configure --help 
-       
-      --prefix=PATH         : Change the top-level installation directory
-                              to PATH (/usr/local by default)
-      --enable-tarname=FILE : Specify the suffix of the tar file
-                              (Linm can recognize either *.tar or *.gtar by default.)
-      --disable-pthread     : Build without pthread support.      
-      --enable-debug        : Enable support for debuggers.
-      --enable-allstatic    : Build Linm as a statically-linked build, 
-                              which can run without external libraries.
-      --with-openssl=DIR    : Look for OpenSSL in PATH
-      --with-libz=PATH      : Look for libz in PATH
-      --disable-sftp        : Build without sftp library.
-      --disable-samba       : Build without samba client library. 
-      --with-ncurses-prefix : ncurses library prefix.
-                                         
+    * openssl (version 1.0 or higher, for SFTP support)
+      (http://www.openssl.org)
+
+    * libssh2 (for SFTP support)
+      (http://www.libssh2.org)
+
+    * samba / libsmbclient (version 3.0.0 or higher, for SMB support)
+      (http://www.samba.org)
+
+   Build Instructions
+
+    $ mkdir build
+    $ cd build
+    $ cmake ..
+    $ make -j$(nproc)
+
+   To install (as root or with sudo):
+
+    $ sudo make install
+
+   To have a shell prompt returned where you end LinM,
+   you need to re-login after installation.
+
+   CMake Options
+
+    -DCMAKE_INSTALL_PREFIX=PATH   : Change the installation prefix
+                                    (/usr/local by default)
+    -DPTHREAD_ENABLE=OFF          : Build without pthread support.
+    -DCMAKE_BUILD_TYPE=Debug      : Enable support for debuggers.
+
 * Installed Files
-  	  
-   1) default.cfg, coloset.cfg, keyset.cfg
-      
-      Linm configuration files. 
+
+   1) default.cfg, colorset.cfg, keyset.cfg
+
+      LinM configuration files.
       Under /etc/linm if installed by root; otherwise, under $HOME/.linm.
-         
-   2) linm.sh, linm_aliase.sh   	
-          
-      LinM executable and shell scripts to move 
-      to the last-visited directory on exit. 
-      
+
+   2) linm.sh, linm_aliase.sh
+
+      LinM executable and shell scripts to move
+      to the last-visited directory on exit.
+
 * Keyboard Shortcuts
 
 	LinM)
 		/       : simple shell command
 		ESC     : Show the command screen
-	
+
 		|       : Go to the home directory
 		\       : Go to the root directory
 		BS      : Go to the parent directory
-		
+
 		Alt+Q   : History previous
 		Alt+W   : History next
 		Alt+C   : Copy file(s) (for using MCD)
@@ -77,26 +79,26 @@
 		Alt+O	: Show ownership.
 
 		Alt+L   : Toggle the line type
-		Alt+H   : Change file mode(Chmod)		
-		Alt+X, 
+		Alt+H   : Change file mode(Chmod)
+		Alt+X,
 		Ctrl+Q  : Exit LinM
-		
+
 		Ctrl+A  : Select all
-		Ctrl+U  : Inverse the file seclection
+		Ctrl+U  : Inverse the file selection
 		SPACE   : Select a file
-	
+
 		Alt+E   : Compression menu
 		Ctrl+L  : Toggle the language mode (English and Korean)
 		Ctrl+W  : Toggle to the split screen
 		TAB     : Next window(when the screen is split)
 		Ctrl+E  : Next window(when the screen is split)
 		Ctrl+N  : New file
-	
+
 		Ctrl+C  : Copy a file
 		Ctrl+V  : Cut or Move a file
-		Ctrl+X  : Paste the file. Only for non-compressed files.  
+		Ctrl+X  : Paste the file. Only for non-compressed files.
 		          (Files are not copied or moved until you paste them)
-	
+
 		F1      : Help
 		F2      : Rename
 		F3      : View
@@ -109,23 +111,23 @@
 		F10     : MCD
 		F11     : Quick Change Directory
 		F12     : Menu
-		
+
 		Ctrl+R  : sftp, ftp, samba remote server connect
 		Alt+R   : sftp, ftp, samba disconnect
 
 		Ctrl+G  : List mounted devices
 		Ctrl+O  : MC style subshell.
-		
+
 		Ctrl+F  : File find
 		Alt+I   : File diff
-		
+
 		Ctrl+B  : configure manager
-	
+
 	MCD)
 		F1      : Help
 		F2      : Rename
-		F3      : Search the whole directory tree. 
-		F4      : Search. Down to the third level subdriectories
+		F3      : Search the whole directory tree.
+		F4      : Search. Down to the third level subdirectories
 		F5      : Refresh
 		F6      : Move
 		F7      : Create directory
@@ -133,25 +135,25 @@
 		F9      : Directory info
 		F10     : List mounted devices
 		F12     : Menu
-		
-		Alt+X, Ctrl+Q 
+
+		Alt+X, Ctrl+Q
 		ESC     : Exit MCD
-	
-		Ctrl+P  : remote connect properties		
+
+		Ctrl+P  : remote connect properties
 		Ctrl+R  : sftp, ftp, samba remote server connect
 		Alt+R   : sftp, ftp samba disconnect
 
 		Ctrl+C  : Copy
 		Ctrl+V  : Paste
 		Ctrl+X  : Cut (only for non-compressed files)
-		
+
 		Ctrl+W  : Split screen
 		TAB     : Next window(when the screen is split)
 		Ctrl+E  : Next window(when the screen is split)
-	
-		Ctrl+O  : ConsoleMode (MC similar)	
 
-	Linm Editor)
+		Ctrl+O  : ConsoleMode (MC similar)
+
+	LinM Editor)
 		F2      : Select
 		F3      : Find next
 		F5      : Find
@@ -159,7 +161,7 @@
 		F6      : Line number
 		F8      : Edit with vim
 		F10,F12 : Menu
-				
+
 		Ctrl+N  : New document
 		Ctrl+S  : Save document
 		Ctrl+C  : Copy
@@ -168,52 +170,45 @@
 		Ctrl+Z  : Undo
 		Ctrl+G  : Move to line
 		Ctrl+F  : Find
-		
+
 		Alt+F   : Go to the first line
 		Alt+E   : Go to the end line
 		Alt+X,
 		Ctrl+Q  : Exit Editor
-		
+
 		Ctrl+W  : Split screen
 		F9      : Next window(when the screen is split)
 		Ctrl+E  : Next window(when the screen is split)
-		
-		Shift+arrow key : Select, only in the Gnome console. 
+
+		Shift+arrow key : Select, only in the Gnome console.
 		                  Use F2 in other terminals.
 
 * Supported Compressed File Formats
-  
+
    tar, tar.gz, gz, bz2, tar.bz2, rpm, zip, deb, alz, jar, rar, iso
 
 * Tested OS
 
-   - Redhat 9, Fedora 1~8
-   - Haansoft Linux 2006
-   - Ubuntu 7.10
-   - Gentoo 2006.02
+   - Ubuntu 22.04, 24.04
+   - Fedora 38+
+   - Debian 12+
 
 * Known Issues
 
    - linm_aliase.sh
 
-     This shell program returns a shell prompt in the directory where Linm
-     was just ended. It should be found in /etc/profile.d by default. 
-     In case you don't end up in the directory where you ended Linm, or 
-     have a problem with running this script, add the below alias 
+     This shell program returns a shell prompt in the directory where LinM
+     was just ended. It should be found in /etc/profile.d by default.
+     In case you don't end up in the directory where you ended LinM, or
+     have a problem with running this script, add the below alias
      to your local .bashrc, or appropriate profiles (for Debian).
-   
-        alias linm='. linm.sh' 
 
-   - Authentification failure when sftping some servers (We are working on it.)
+        alias linm='. linm.sh'
 
-* Homepage (wiki)
- 
-   http://wiki.kldp.org/wiki.php/Mls
-   
-* Project Homepage
+* Homepage
 
-   http://kldp.net/projects/mls/
-   
+   https://github.com/la9527/linm
+
 * Developers
 
    Byoungyoung, La     la9527@daum.net        Project Manager
@@ -222,28 +217,51 @@
    Youngseop, Seo      seobi49@naver.com         Developer
    Chaehoon, Yim       fehead@gmail.net          Tester
    Eunseo, Choi        eunseo.choi@gmail.com     Translator
-   Kitea, Kim          bluetux@gmail.com         Designer 
-   kayws426            kayws426@gmail.com		 Developer
+   Kitea, Kim          bluetux@gmail.com         Designer
+   kayws426            kayws426@gmail.com        Developer
 
 ----------------------------------------------------------------------------
 ChangeLog
+
+0.9.1
+  * Modernized for Ubuntu 22.04+ and GCC 12+ environments.
+  * Build system: CMake 3.10+ required.
+  * Comprehensive code quality improvements (60+ bug fixes):
+    - Fixed memory safety: NULL dereferences, buffer overflows,
+      uninitialized variables, use-after-free, memory leaks.
+    - Fixed threading: pthread_cond_timedwait absolute time,
+      mutex lock/unlock pairing, va_copy for va_list reuse.
+    - Fixed logic errors: operator< self-comparison, && vs ||
+      range checks, dup2 argument order, switch fall-through.
+    - Fixed security: replaced system() shell injection with
+      fork+exec and safe C APIs, inet_ntoa replaced with inet_ntop.
+    - Fixed type safety: ullong changed to unsigned long long,
+      ssize_t used for error detection from libssh2_sftp_read.
+    - Fixed build: sizeof(pointer) bug after VLA-to-vector conversion,
+      libssh2_session_startup replaced with libssh2_session_handshake.
+    - Fixed dead code: semicolons truncating tar extract -C directory,
+      format string argument count mismatches.
+
+0.9.0
+  * Build packaging changed from automake to cmake.
+  * Fix compile warnings.
+  * Fixed syntax highlighter in internal editor.
 
 0.8.1
   * Support console transparency.
   * Bug-fix - compress cancel.
   * fix linm.sh, linm.csh.
   * quick search reinforcement
-  * shell mode cursor bugfix. 
+  * shell mode cursor bugfix.
 
 0.8
   * configure menu add.
   * libssh2-0.18 update.
   * rar, iso add.
   * editor text replace menu add.
-  
+
 0.7.12
   * samba connect supported.
   * file copy progressbar bugfix.
   * remote copy overwrite message bugfix.
   * FreeBSD, GCC 2.9x compile error fix.
-   

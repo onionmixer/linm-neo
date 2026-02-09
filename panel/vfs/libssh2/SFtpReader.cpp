@@ -250,7 +250,7 @@ int		SFtpReader::SessionStartup(const string& sIP)
 	SetMethod( LIBSSH2_METHOD_MAC_SC, sMac_cs );
 	SetMethod( LIBSSH2_METHOD_COMP_CS, sComp_cs);
 
-	if ( libssh2_session_startup((LIBSSH2_SESSION*)_pSession, nSockNum))
+	if ( libssh2_session_handshake((LIBSSH2_SESSION*)_pSession, nSockNum))
 	{
 		GetMethods();
 		throw Exception("Failure establishing SSH session.");
@@ -437,7 +437,7 @@ bool SFtpReader::Init(const string& sInitFile)
 	catch (Exception& ex)
 	{
 		String	sMsg; string	sErrMsg = GetLastErrMsg();
-		sMsg.Append("%s", (char*)ex);
+		sMsg.Append("%s", (const char*)ex);
 		if ( !sErrMsg.empty() )	sMsg.Append("[%s]", sErrMsg.c_str());
 		MsgBox(_("Error"), sMsg.c_str());
 		MsgWaitEnd(pWait);
@@ -580,7 +580,7 @@ string	SFtpReader::GetPwd() const
 	catch(Exception& ex)
 	{
 		String	sMsg; 
-		sMsg.Append("%s", (char*)ex);		
+		sMsg.Append("%s", (const char*)ex);		
 		MsgBox(_("Error"), sMsg.c_str());
 		return "";
 	}
@@ -726,7 +726,7 @@ bool	SFtpReader::GetInfo(File &tFile)
 	catch(Exception& ex)
 	{
 		String	sMsg; string sErrMsg = GetLastErrMsg();
-		sMsg.Append("%s", (char*)ex);		
+		sMsg.Append("%s", (const char*)ex);		
 		if (!sErrMsg.empty()) sMsg.Append("[%s]", sErrMsg.c_str());
 		MsgBox(_("Error"), sMsg.c_str());
 		return false;
@@ -736,11 +736,11 @@ bool	SFtpReader::GetInfo(File &tFile)
 
 bool	SFtpReader::Next()
 {
-	char	cFileName[2047];
-	
+	char	cFileName[2048];
+
 	memset(_pFileAttr, 0, sizeof(LIBSSH2_SFTP_ATTRIBUTES));
-	int nRt = libssh2_sftp_readdir((LIBSSH2_SFTP_HANDLE*)_pDir, cFileName, 2047, (LIBSSH2_SFTP_ATTRIBUTES*)_pFileAttr);
-	
+	int nRt = libssh2_sftp_readdir((LIBSSH2_SFTP_HANDLE*)_pDir, cFileName, sizeof(cFileName) - 1, (LIBSSH2_SFTP_ATTRIBUTES*)_pFileAttr);
+
 	if ( nRt > 0 )
 	{
 		cFileName[nRt] = '\0';
@@ -910,7 +910,8 @@ bool SFtpReader::Copy(	Selection& tSelection, 		// remote
 
 	int	nBufSize = g_tCfg.GetValueNum("SSH", "DefBufSize", 8196);
 
-	char	buf[nBufSize];	// reading byte 
+	vector<char>	vBuf(nBufSize);
+	char*	buf = vBuf.data();	// reading byte
 
 	vFiles = tSelection.GetData();
 
@@ -1120,7 +1121,8 @@ askagain_sftp_copy:
 				
 				if (tAttr.filesize <= (libssh2_uint64_t)uCsize ) break;
 						
-				if ((uLastSize = libssh2_sftp_read(pFtpFileHandle, buf, sizeof(buf))) < 0)
+				ssize_t nReadSize = libssh2_sftp_read(pFtpFileHandle, buf, nBufSize);
+				if (nReadSize < 0)
 				{
 					String	sMsg; string sErrMsg  = GetLastErrMsg();
 					sMsg.Append(_("remote file access error (%s), continue? !!! "), pFile->sFullName.c_str());
@@ -1132,9 +1134,10 @@ askagain_sftp_copy:
 					remove( sTargetName.c_str() );
 					goto halt_sftp_copy;
 				}
-				
+				uLastSize = (ullong)nReadSize;
+
 				fwrite(buf, 1, uLastSize, out);
-	
+
 				uCsize +=uLastSize;
 				uPsize +=uLastSize;
 
@@ -1186,7 +1189,8 @@ bool	SFtpReader::Paste(Selection& tSelection)
 	struct stat 	src_stat;
 
 	int		nBufSize = g_tCfg.GetValueNum("SSH", "DefBufSize", 8196);
-	char	buf[nBufSize];
+	vector<char>	vBuf(nBufSize);
+	char*	buf = vBuf.data();
 
 	ullong	uFileSize = tSelection.CalcSize();
 	uint	uSize = tSelection.GetSize();
@@ -1397,7 +1401,7 @@ askagain_sftp_paste:
 
 		if ( fp )
 		{
-			while( !feof(fp) )
+			for(;;)
 			{
 				if (tProgress.isExit())
 				{
@@ -1410,9 +1414,10 @@ askagain_sftp_paste:
 						goto halt_sftp_paste;
 					}
 					tProgress.Start();
-				}				
-				
-				uLastSize = fread(buf, 1, sizeof(buf), fp);
+				}
+
+				uLastSize = fread(buf, 1, nBufSize, fp);
+				if (uLastSize == 0) break;
 				
 				int nSize = 0, nSizePlus = 0;
 				do
@@ -1575,7 +1580,7 @@ bool SFtpReader::Remove(MLS::Selection& tSelection, bool bMsgShow, bool bIgnore)
 		if (libssh2_sftp_rmdir((LIBSSH2_SFTP*)_pSessionSFtp, (char*)sTargetName.c_str())==-1)
 		{
 			String	sMsg; string sErrMsg = GetLastErrMsg();
-			sMsg.Append(_("sftp dir remove failure : %s : %s. continue ? "), pFile->sName.c_str());
+			sMsg.Append(_("sftp dir remove failure : %s. continue ? "), pFile->sName.c_str());
 			if (!sErrMsg.empty()) sMsg.Append("[%s]", sErrMsg.c_str());
 			tProgress.End();
 			if (YNBox(_("Error"), sStr.c_str(), false)==true)
@@ -1618,8 +1623,9 @@ bool  SFtpReader::View(const File* pFileOriginal, File* pFileChange)
 	LIBSSH2_SFTP_ATTRIBUTES 	tAttr;
 
 	int		nBufSize = g_tCfg.GetValueNum("SSH", "DefBufSize", 8196);
-	char	buf[nBufSize];
-	 
+	vector<char>	vBuf(nBufSize);
+	char*	buf = vBuf.data();
+
 	// 파일 이름이 없을경우 continue 
 	if (!pFileOriginal) return false;
 
@@ -1689,9 +1695,9 @@ bool  SFtpReader::View(const File* pFileOriginal, File* pFileChange)
 			
 			if (tAttr.filesize <= (libssh2_uint64_t)uCsize ) break;
 			
-			uLastSize = libssh2_sftp_read(pFtpFileHandle, buf, sizeof(buf));
+			ssize_t nReadSize = libssh2_sftp_read(pFtpFileHandle, buf, nBufSize);
 
-			if ( uLastSize == -1 )
+			if ( nReadSize < 0 )
 			{
 				libssh2_sftp_close_handle(pFtpFileHandle);
 				tProgress.End();
@@ -1700,11 +1706,12 @@ bool  SFtpReader::View(const File* pFileOriginal, File* pFileChange)
 				sMsg.Append(_("File access error (%s). !!!"),
 							 pFileOriginal->sFullName.c_str());
 
-				if (!sErrMsg.empty()) 
+				if (!sErrMsg.empty())
 					sMsg.Append("[%s]", sErrMsg.c_str());
 				MsgBox(_("Error"), sMsg.c_str());
 				return false;
 			}
+			uLastSize = (ullong)nReadSize;
 			fwrite(buf, 1, uLastSize, out);
 
 			uCsize +=uLastSize;

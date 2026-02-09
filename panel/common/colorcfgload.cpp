@@ -127,7 +127,7 @@ namespace MLS
 		}
 		catch(Exception& ex)
 		{
-			LOG("Color File Loading Exception : %s", (char*)ex);
+			LOG("Color File Loading Exception : %s", (const char*)ex);
 			return false;
 		}
 		

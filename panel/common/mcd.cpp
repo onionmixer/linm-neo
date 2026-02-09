@@ -73,22 +73,26 @@ bool	Mcd::Load(const char* sFile)
 
 	fread(sCheckVersion, _sCode.size(), 1, pFile);
 
-	if (_sCode != sCheckVersion) return false;
+	if (_sCode != sCheckVersion) { fclose(pFile); return false; }
 
 	File	tFile;
 
-	while( !feof( pFile ) )
+	for(;;)
 	{
 		int 	nDepth = fgetc(pFile);
+		if (nDepth == EOF) break;
 		int 	nCheck = fgetc(pFile);
 		int 	nLink  = fgetc(pFile);
 
-		int 	nSize =fgetc(pFile)*256;
-		nSize += fgetc(pFile);
+		int 	nSizeHi = fgetc(pFile);
+		int 	nSizeLo = fgetc(pFile);
 
-		if (feof(pFile)) break;
+		if (nCheck == EOF || nLink == EOF || nSizeHi == EOF || nSizeLo == EOF) break;
+		int 	nSize = nSizeHi * 256 + nSizeLo;
+		if (nSize <= 0 || nSize > 4096) break;
 
-		char	sFullName[nSize+1];
+		vector<char> vFullName(nSize+1);
+		char* sFullName = vFullName.data();
         fread(sFullName, nSize, 1, pFile);
 		sFullName[nSize] = 0;
 		
@@ -101,6 +105,7 @@ bool	Mcd::Load(const char* sFile)
 		{
 			while( nDepth < nPreDepth )
 			{
+				if (!pNode || !pNode->pParentDir) break;
 				pNode = pNode->pParentDir;
 				nPreDepth--;
 			}
@@ -260,11 +265,13 @@ Mcd::Key_Up()
 	{		
 		if ((*_pCur)->nDepth != (*(_pCur-1))->nDepth )
 		{
-			pDirIterator t;
-			for (t = _pCur-1 ; t != _pOrder.begin() - 1; t--)
-				if ((*t)->nDepth == (*_pCur)->nDepth) break;
-				
-			if (t != _pOrder.begin()-1) _pCur = t;
+			pDirIterator t = _pCur;
+			bool bFound = false;
+			while (t != _pOrder.begin()) {
+				--t;
+				if ((*t)->nDepth == (*_pCur)->nDepth) { bFound = true; break; }
+			}
+			if (bFound) _pCur = t;
 			else
 				Key_Left();
 		}
@@ -604,6 +611,11 @@ int	Mcd::SearchProcess(KeyInfo&	tKeyInfo)
 		// 뒷부분에 key를 넣고
 		if (tKeyInfo.sKeyName == "BS")
 		{
+			if (_sStrSearch.empty())
+			{
+				_bSearch = false;
+				return 0;
+			}
 			_sStrSearch.erase(_sStrSearch.size()-1, 1);
 			if (_sStrSearch.empty())
 			{

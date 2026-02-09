@@ -370,7 +370,7 @@ int main( int argc, char ** argv )
 	}
 	catch(Exception& ex)
 	{
-		qDebug("Exception :: %s", (char*)ex );
+		qDebug("Exception :: %s", (const char*)ex );
 	}
 	catch(...)
 	{

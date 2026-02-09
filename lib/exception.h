@@ -36,21 +36,20 @@ namespace	MLSUTIL
 			Exception(const char *fmt, ...);
 
 			Exception(int nNum): _nErrNo(nNum) {}
-			Exception(int nErrNo, char* 	pMsg	= NULL);
 			Exception(int nErrNo, string	pMsg);
 			Exception(int nErrNo, const char *fmt, ...);
 
-			char*	GetInfo(void);
+			const char*	GetInfo(void);
 			int		GetErrNo() { return _nErrNo; }
 
 			/// @brief	return to char* type of error information.
-			operator	char*()	{return	(char*)_strError.c_str();}
+			operator	const char*() const	{return	_strError.c_str();}
 
 			/// @brief	return to string type of error information.
 			operator	string()	{return	_strError;}
 			
 			/// @brief	for cout. operator ex) cout << ExceptionClass << endl;
-			friend 	ostream&	operator>>(ostream& output, Exception& tEx);
+			friend 	ostream&	operator<<(ostream& output, Exception& tEx);
 
 		protected:
 			string	_strError;		///<	Error information of string type.

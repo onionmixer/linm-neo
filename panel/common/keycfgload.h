@@ -151,7 +151,7 @@ public:
 
 	bool operator < (const TypeInfo& tTypeInfo)  const
 	{
-		return tTypeInfo.sValue < tTypeInfo.sValue;
+		return sValue < tTypeInfo.sValue;
 	}
 
 public:

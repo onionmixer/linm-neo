@@ -1,6 +1,8 @@
 #include "cmd_editor_imp.h"
 #include "mainframe.h"
 #include "mlsmenu.h"
+#include <sys/wait.h>
+#include <fcntl.h>
 
 using namespace MLS;
 using namespace MLSUTIL;
@@ -141,16 +143,15 @@ void CmdEditorImp::Quit()
 			string 	sDeleteFile;
 
 			if (p != string::npos)
-			{
-				sDeleteFile = 	"rm -rf " + sTmpDir + 
-								sTmpFile.substr(0, p) + " > /dev/null 2> /dev/null";
-			}
+				sDeleteFile = sTmpDir + sTmpFile.substr(0, p);
 			else
-			{
-				sDeleteFile = 	"rm -rf " + sTmpDir +  
-								sTmpFile + " > /dev/null 2> /dev/null";
+				sDeleteFile = sTmpDir + sTmpFile;
+
+			if (!sDeleteFile.empty() && sDeleteFile != "/") {
+				pid_t pid = fork();
+				if (pid == 0) { execlp("rm", "rm", "-rf", sDeleteFile.c_str(), (char*)NULL); _exit(127); }
+				if (pid > 0) { int st; waitpid(pid, &st, 0); }
 			}
-			system( sDeleteFile.c_str() );
 		}
 
 		ReloadConfigChange();

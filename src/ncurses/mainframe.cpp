@@ -44,7 +44,7 @@ void TitleChange(const string &sPath, bool bHostNameShow) {
     string sStr = sPath;
     char cHostName[100];
 
-    memset(&cHostName, 0, sizeof(cHostName));
+    memset(cHostName, 0, sizeof(cHostName));
 
     if (scrstrlen(sStr) > COLS) {
         sStr = scrstrncpy(sStr, scrstrlen(sStr) - COLS + 20, COLS - 20);
@@ -56,7 +56,7 @@ void TitleChange(const string &sPath, bool bHostNameShow) {
         if (pw)
             sLogin = pw->pw_name;
     } else
-        sprintf(cHostName, "localhost");
+        snprintf(cHostName, sizeof(cHostName), "localhost");
 
     if (strlen(cHostName) == 0 || sLogin.size() == 0 || !bHostNameShow) {
         printf("%c]0;LinM %s - %s%c", '\033', VERSION, sStr.c_str(), '\007');

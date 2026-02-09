@@ -59,35 +59,35 @@ static void	AuthDataFn(	const char * pServer,
 	sMsg.Append(_("Samba Connect Input WorkGroup - [%s - %s]"), pServer, pShare);
 	if (InputBox(sMsg.c_str(), sWorkGroup) == ERROR)
 	{
-		pWorkgroup = 0;
-		pUsername = 0;
-		pPassword = 0;
+		pWorkgroup[0] = '\0';
+		pUsername[0] = '\0';
+		pPassword[0] = '\0';
 		return;
 	}
 
-	sprintf( pWorkgroup, "%s", sWorkGroup.c_str() );
+	snprintf( pWorkgroup, maxLenWorkgroup, "%s", sWorkGroup.c_str() );
 
 	sMsg.clear();
 	sMsg.Append(_("Samba Connect Input Username - [%s - %s] [%s]"), pServer, pShare, pWorkgroup);
 	if (InputBox( sMsg.c_str(), sUser ) == ERROR)
 	{
-		pUsername = 0;
-		pPassword = 0;
+		pUsername[0] = '\0';
+		pPassword[0] = '\0';
 		return;
 	}
 
-	sprintf( pUsername, "%s", sUser.c_str() );
+	snprintf( pUsername, maxLenUsername, "%s", sUser.c_str() );
 
 	sMsg.clear();
 	sMsg.Append(_("Samba Connect Input Passwd - [%s - %s] [%s %s] "), 
 				pServer, pShare, pWorkgroup, pUsername);
 	if (InputBox(sMsg.c_str(), sPasswd, true) == ERROR)
 	{
-		pPassword = 0;
+		pPassword[0] = '\0';
 		return;
 	}
 	
-	sprintf( pPassword, "%s", sPasswd.c_str() );
+	snprintf( pPassword, maxLenPassword, "%s", sPasswd.c_str() );
 }
 
 SMBReader::SMBReader()
@@ -134,18 +134,8 @@ bool	SMBReader::Init(const string& sInitFile)
 	}
 
     /* Set mandatory options (is that a contradiction in terms?) */
-	/*
-	#ifndef DEBUG
-	*/
-    	pContext->debug = 0;
-	/*
-	#else
-		pContext->debug = 1;
-		smbc_option_set(context, "debug_stderr");
-	#endif
-	*/
-
-    pContext->callbacks.auth_fn = (_bNoAuth ? No_AuthDataFn : AuthDataFn);
+    smbc_setDebug(pContext, 0);
+    smbc_setFunctionAuthData(pContext, (_bNoAuth ? No_AuthDataFn : AuthDataFn));
 
     /* Initialize the context using the previously specified options */
     if ( !smbc_init_context(pContext) )
@@ -294,14 +284,14 @@ SmbAuthCheck:
 			SMBCCTX* pContext = (SMBCCTX*)_pContext;
 			if ( !bAccess )
 			{
-				pContext->callbacks.auth_fn = AuthDataFn;
+				smbc_setFunctionAuthData(pContext, AuthDataFn);
 				smbc_set_context( pContext );
 				bAccess = true;
 				goto SmbAuthCheck;
 			}
 			else
 			{
-				pContext->callbacks.auth_fn = No_AuthDataFn;
+				smbc_setFunctionAuthData(pContext, No_AuthDataFn);
 				smbc_set_context( pContext );
 			}	
 		}
@@ -444,7 +434,7 @@ void	SMBReader::SMBFileRead( MLS::File& tFile, const struct stat* pStatBuf )
 	// tFile S_ISUID, S_ISGID, S_ISVTX 추가
 	// zip과 맞추기 위해서 '.' 에서 '-' 로 바꿈.
 
-	char	cAttr[10];
+	char	cAttr[11];
 	if (tFile.bLink)
 		cAttr[0]= 'l';
 	else 
@@ -505,9 +495,9 @@ bool SMBReader::Copy(	Selection& tSelection, 		// remote
 	
 	struct stat src_stat, tar_stat;
 
-	int	nBufSize = 8196;
+	const int	nBufSize = 8196;
 
-	char	buf[nBufSize];	// reading byte 
+	char	buf[nBufSize];	// reading byte
 
 	vFiles = tSelection.GetData();
 
@@ -781,7 +771,7 @@ bool	SMBReader::Paste(Selection& tSelection)
 	vector<File*>	vFiles;
 	struct stat 	src_stat;
 
-	int		nBufSize = 8196;
+	const int	nBufSize = 8196;
 	char	buf[nBufSize];
 
 	ullong	uFileSize = tSelection.CalcSize();
@@ -984,7 +974,7 @@ askagain_samba_paste:
 		
 		if ( fp )
 		{
-			while( !feof(fp) )
+			for(;;)
 			{
 				if (tProgress.isExit())
 				{
@@ -997,9 +987,10 @@ askagain_samba_paste:
 						goto halt_samba_paste;
 					}
 					tProgress.Start();
-				}				
-				
+				}
+
 				uLastSize = fread(buf, 1, sizeof(buf), fp);
+				if (uLastSize == 0) break;
 				
 				int nSize = 0, nSizePlus = 0;
 				do
@@ -1166,7 +1157,7 @@ bool SMBReader::Remove(MLS::Selection& tSelection, bool bMsgShow, bool bIgnore)
 		if (smbc_rmdir( ("smb:/"+sTargetName).c_str() ) < 0 )
 		{
 			String	sMsg; string sErrMsg = strerror( errno );
-			sMsg.Append(_("samba dir remove failure : %s : %s. continue ? "), pFile->sName.c_str());
+			sMsg.Append(_("samba dir remove failure : %s. continue ? "), pFile->sName.c_str());
 			if (!sErrMsg.empty()) sMsg.Append("[%s]", sErrMsg.c_str());
 			tProgress.End();
 			if (YNBox(_("Error"), sStr.c_str(), false)==true)
@@ -1207,7 +1198,7 @@ bool  SMBReader::View(const File* pFileOriginal, File* pFileChange)
 { 
 	string	sSourceName, sTargetName;
 	
-	int		nBufSize = 8196;
+	const int	nBufSize = 8196;
 	char	buf[nBufSize];
 	 
 	// 파일 이름이 없을경우 continue 

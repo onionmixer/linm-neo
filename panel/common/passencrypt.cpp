@@ -21,7 +21,8 @@
 #endif
 
 #ifdef __LINM_SFTP_USE__
-	#include "openssl/des.h"
+	#define OPENSSL_SUPPRESS_DEPRECATED
+	#include <openssl/des.h>
 #endif
 
 #include "exception.h"
@@ -75,14 +76,17 @@ void	PasswdCrypt::DesECBEncode(const string& sKeyHex, const string& sDecode, str
 	int					i;
 
 	sEncode = "";
-	memcpy(&cKeyHex, sKeyHex.c_str(), 16);
-	memcpy(&cDecode, sDecode.c_str(), 16);
 
 	if (sDecode.size() > 8)
 		throw Exception("Decode string size > 8 !!!");
 
 	if (sKeyHex.size() != 16)
 		throw Exception("KeyHex string size != 16 !!!");
+
+	memset(cKeyHex, 0, sizeof(cKeyHex));
+	memset(cDecode, 0, sizeof(cDecode));
+	memcpy(cKeyHex, sKeyHex.c_str(), sKeyHex.size());
+	memcpy(cDecode, sDecode.c_str(), sDecode.size());
 	
 	for(i=0; i<8; i++)
 	{
@@ -118,14 +122,15 @@ void	PasswdCrypt::DesECBDecode(const string& sKeyHex, const string& sEncode, str
 	int					i;
 
 	sDecode = "";
-	memcpy(&cKeyHex, sKeyHex.c_str(), 16);
-	memcpy(&cEncode, sEncode.c_str(), 16);
 
 	if (sEncode.size() != 16)
 		throw Exception("Decode string size != 8 !!!");
 
 	if (sKeyHex.size() != 16)
 		throw Exception("KeyHex string size != 16 !!!");
+
+	memcpy(cKeyHex, sKeyHex.c_str(), 16);
+	memcpy(cEncode, sEncode.c_str(), 16);
 
 	for(i=0; i<8; i++)
 	{
@@ -167,7 +172,8 @@ bool	PasswdCrypt::ClientMacAddress(const string& sDevice, string& sIP, string& s
 	/* XXX Work around Linux kernel bug */
 	ifr.ifr_addr.sa_family = AF_INET;
 
-	strncpy(ifr.ifr_name, sDevice.c_str(), sizeof(ifr.ifr_name));
+	strncpy(ifr.ifr_name, sDevice.c_str(), sizeof(ifr.ifr_name) - 1);
+	ifr.ifr_name[sizeof(ifr.ifr_name) - 1] = '\0';
 	if(ioctl(fd, SIOCGIFADDR, &ifr) < 0) {
 		bRt = false;
 	} else {
@@ -186,12 +192,14 @@ bool	PasswdCrypt::ClientMacAddress(const string& sDevice, string& sIP, string& s
 		sMacAddr.Printf("%2.2X%2.2X%2.2X%2.2X%2.2X%2.2X", 
 					*ptr, *(ptr+1),*(ptr+2), *(ptr+3),*(ptr+4),*(ptr+5));
 		sMacAddress = sMacAddr.c_str();
-		close(fd);
 	}
-	
-	if ( sinAddr )
-		sIP = (const char*)inet_ntoa(sinAddr->sin_addr);
-		
+
+	if ( sinAddr ) {
+		char ipbuf[INET_ADDRSTRLEN];
+		if (inet_ntop(AF_INET, &sinAddr->sin_addr, ipbuf, sizeof(ipbuf)))
+			sIP = ipbuf;
+	}
+
 	close(fd);
 	#else
 	// cygwin에서는 따로 알아낼 방법을 찾아야 함.
@@ -241,7 +249,7 @@ bool	PasswdCrypt::Encrypt(const string& sDecode, string& sRtEncode)
 	}
 	catch(Exception& ex)
 	{
-		LOG("Encrypt Error [%s]", (char*)ex);
+		LOG("Encrypt Error [%s]", (const char*)ex);
 		return false;
 	}
 	return true;
@@ -290,7 +298,7 @@ bool PasswdCrypt::Decrypt(const string& sEncode, string& sRtDecode)
 	}
 	catch(Exception& ex)
 	{
-		LOG("Decrypt Error [%s]", (char*)ex);
+		LOG("Decrypt Error [%s]", (const char*)ex);
 		return false;
 	}
 

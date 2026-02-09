@@ -248,7 +248,7 @@ void Menu::DrawFirst()
 	for (int t=0; t<(int)_vItem.size(); t++)
 	{
 		mvwprintw(_pWin, y, _vItem[t].x+1,
-				(char*)scrstrncpy(_vItem[t].GetName(), 0, 1).c_str());
+				"%s", scrstrncpy(_vItem[t].GetName(), 0, 1).c_str());
 	}
 
 	// if selected menu, write to string on black background.
@@ -258,7 +258,7 @@ void Menu::DrawFirst()
 	// if selected menu, first char is yellow. (for division)
 	setcol(_tColorMenuA.font, 0, _pWin);
 	mvwprintw(_pWin, y, _vItem[_nNum].x+1,
-			(char*)scrstrncpy(_vItem[_nNum].GetName(), 0, 1).c_str());
+			"%s", scrstrncpy(_vItem[_nNum].GetName(), 0, 1).c_str());
 
 	wnoutrefresh(_pWin);
 }

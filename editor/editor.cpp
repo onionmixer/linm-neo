@@ -12,16 +12,34 @@ using namespace MLSUTIL;
 using namespace MLS;
 
 Editor::Editor() {
-    _nTabSize = 8;
-    _sFile = "";
+    _nLine = 0;
+    _nCulumn = 0;
+    _nCurCulumn_Max = 0;
+    _nFirstLine = 0;
+    _nLastLine = 0;
+    _nViewCul = 0;
+    _nViewLine = 0;
+    _nCurLine = 0;
+    _nCurCulumn = 0;
     _bLineNumView = false;
     _bInsert = true;
+    _bIndentMode = true;
     _EditMode = EDIT;
-    _nCurCulumn_Max = 0;
+    _EditSelect.x1 = 0;
+    _EditSelect.y1 = 0;
+    _EditSelect.x2 = 0;
+    _EditSelect.y2 = 0;
+    _nLineWidth = 0;
+    _nTabSize = 8;
     _bReadOnly = false;
     _bDosMode = false;
-    _bIndentMode = true;
     _bKeyCfgLoad = false;
+    _sFile = "";
+    _bBackup = false;
+    _eEncode = AUTO;
+    _nConvInfo = 0;
+    _nFindPosX = 0;
+    _nFindPosY = 0;
 }
 
 Editor::~Editor() {
@@ -595,10 +613,10 @@ void Editor::Key_BS() {
                     sLine2 = sLine2 + _vText[_nCurLine].wLine.substr(_nCurCulumn, nStrSize - _nCurCulumn);
                     _nCurCulumn = _nCurCulumn - 1;
                 }
-            }
 
-            _vText[_nCurLine] = sLine2;
-            PostUpdateLines(_nCurLine);
+                _vText[_nCurLine] = sLine2;
+                PostUpdateLines(_nCurLine);
+            }
 
             _EditSelect.x2 = _nCurCulumn;
             _EditSelect.y2 = _nCurLine;
@@ -772,8 +790,8 @@ void Editor::GotoFirst() {
 }
 
 void Editor::GotoEnd() {
-    _nCurLine = _vText.size() - 1;
-    _nFirstLine = _nCurLine - 10;
+    _nCurLine = _vText.empty() ? 0 : (int)_vText.size() - 1;
+    _nFirstLine = _nCurLine > 10 ? _nCurLine - 10 : 0;
     _EditMode = EDIT;
 }
 

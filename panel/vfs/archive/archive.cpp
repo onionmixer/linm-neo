@@ -1487,11 +1487,11 @@ int Archive::Uncompress(const string& sTargetDir)
 							+ _sFilename.substr(0, _sFilename.rfind("."));
 				break;
 			case TAR:
-				sCommand = sInTarget + _sTarCommand + " xf " + addslash(_sFullFilename);
+				sCommand = sInTarget + _sTarCommand + " xf " + addslash(_sFullFilename)
 							+ " -C " + sTargetDir; // extract Directory
 				break;
 			case TAR_BZ:
-				sCommand = sInTarget + _sTarCommand + " xfj " + addslash(_sFullFilename);
+				sCommand = sInTarget + _sTarCommand + " xfj " + addslash(_sFullFilename)
 							+ " -C " + sTargetDir; // extract Directory
 				 break;
 			case TAR_GZ:

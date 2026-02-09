@@ -77,7 +77,7 @@ ColorEntry Panel::GetColor(File* pFile)
 	if (exti != g_tColorCfg._mapExt.end() ) return (*exti).second;
 
 	// 이름	
-	if ( pFile->Ext().size() )	
+	if ( pFile->Ext().size() && pFile->sName.size() > pFile->Ext().size() )
 		strName  = pFile->sName.substr(0, pFile->sName.size() - pFile->Ext().size() - 1);
 	else
 		strName = pFile->sName;			
@@ -88,11 +88,14 @@ ColorEntry Panel::GetColor(File* pFile)
 		return (*namei).second;
 		
 	// 퍼미션
-	int mode=0;	
-	for (int z=1; z<10; z++)
+	int mode=0;
+	if (pFile->sAttr.size() >= 10)
 	{
-		mode <<= 1;
-		mode +=	pFile->sAttr[z] == '-' ? 0 : 1;
+		for (int z=1; z<10; z++)
+		{
+			mode <<= 1;
+			mode +=	pFile->sAttr[z] == '-' ? 0 : 1;
+		}
 	}	
 
 	for (map<int , ColorEntry>::iterator mi = g_tColorCfg._mapMask.begin(); mi != g_tColorCfg._mapMask.end(); ++mi)
@@ -336,9 +339,10 @@ void	Panel::Key_Left()
 /// @brief	오른쪽 방향 키
 void	Panel::Key_Right()
 {
+	if (_vDirFiles.empty()) return;
 	int nCur;
 	nCur = _uCur+_nRow;
-	if (nCur > (int)_vDirFiles.size()-1)
+	if (nCur > (int)(_vDirFiles.size()-1))
 		nCur = _vDirFiles.size()-1;
 	SetCur(nCur);
 	_bChange = false;
@@ -355,7 +359,7 @@ void	Panel::Key_Up()
 /// @brief	아래쪽 방향키
 void	Panel::Key_Down()
 {
-	if (_uCur < _vDirFiles.size()-1)
+	if (!_vDirFiles.empty() && _uCur < _vDirFiles.size()-1)
 		SetCur(_uCur+1);
 	_bChange = false;
 }
@@ -373,9 +377,10 @@ void	Panel::Key_PageUp()
 /// @brief	page down key
 void	Panel::Key_PageDown()
 {
+	if (_vDirFiles.empty()) return;
 	int nCur;
 	nCur = _uCur + (_nRow*_nCol);
-	if (nCur > (int)_vDirFiles.size()-1)
+	if (nCur > (int)(_vDirFiles.size()-1))
 		nCur=_vDirFiles.size()-1;
 
 	SetCur(nCur);
@@ -392,7 +397,8 @@ void	Panel::Key_Home()
 /// @brief	Key End
 void	Panel::Key_End()
 {
-	SetCur(_vDirFiles.size()-1);	
+	if (_vDirFiles.empty()) return;
+	SetCur(_vDirFiles.size()-1);
 	_bChange = false;
 }
 
@@ -780,6 +786,11 @@ Panel::SearchProcess(KeyInfo&	tKeyInfo)
 		// 뒷부분에 key를 넣고
 		if (tKeyInfo.sKeyName == "BS")
 		{
+			if (_sStrSearch.empty())
+			{
+				_bSearch = false;
+				return true;
+			}
 			_sStrSearch.erase(_sStrSearch.size()-1, 1);
 			if (_sStrSearch.empty())
 			{
@@ -806,7 +817,8 @@ Panel::SearchProcess(KeyInfo&	tKeyInfo)
 			}
 			else
 			{
-				_sStrSearch.erase(_sStrSearch.size()-1, 1);
+				if (!_sStrSearch.empty())
+					_sStrSearch.erase(_sStrSearch.size()-1, 1);
 			}
 		}
 		else

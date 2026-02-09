@@ -131,7 +131,7 @@ void Label::Draw()
 		else
 			viewX = 0;
 
-		mvwprintw(pWin, y+n, x+viewX, (char*)sViewStr.c_str());
+		mvwprintw(pWin, y+n, x+viewX, "%s", sViewStr.c_str());
 		LOG("y [%d] viewX [%d] [%s]", y+n, viewX, sViewStr.c_str());
 	}
 	wattroff(pWin, A_BOLD);

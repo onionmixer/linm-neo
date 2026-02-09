@@ -21,6 +21,11 @@ MlsThread(bool bThreadOn)
 {
     m_pArg	= NULL;
 	m_tRun	= PTHREAD_START;
+	m_bMlsThreadOn = bThreadOn;
+	m_bType = DETACH;
+	#ifdef PTHREAD_ENABLE
+	m_tHandle = 0;
+	#endif
 
 	LOG("Thread::Create");
 	#ifdef PTHREAD_ENABLE
@@ -31,7 +36,7 @@ MlsThread(bool bThreadOn)
 		{
 			throw Exception("pthread_attr_init failed");
 		}
-		pthread_attr_setstacksize( &m_tAttr, 128 );
+		pthread_attr_setstacksize( &m_tAttr, 1024 * 1024 );
 	}
     #endif
 }
@@ -136,15 +141,17 @@ void
 MlsThread::
 Cancel(void)
 {
+#ifdef PTHREAD_ENABLE
 	int nRt = pthread_cancel(m_tHandle);
 
 	if (nRt == ESRCH)
 	{
 		LOG("Thread::Cancel - no thread could be found");
 	}
-	
+
 	if (nRt)
 		throw Exception("Thread::Cancel Error %d", nRt);
+#endif
 }
 
 /// @brief    cancel 위치를 정할때 사용한다.
@@ -152,7 +159,9 @@ void
 MlsThread::
 CancelPoint(void)
 {
+#ifdef PTHREAD_ENABLE
 	pthread_testcancel();
+#endif
 }
 
 /// @brief	쓰레드에서 usleep을 이용하지 않고 select를 이용해서 Thread 를 sleep한다.
@@ -180,14 +189,14 @@ MlsThread::
 EntryPoint(void*	pThis)
 {
 	MlsThread*	pThread	= (MlsThread*)pThis;
-	LOG("Thread::Execute Start :: ID :: %d", pthread_self());
+	LOG("Thread::Execute Start :: ID :: %lu", (unsigned long)pthread_self());
 
 	// Run 을 실행. Run은 Excute 실행(virtual 함수)
 	void* 	pReturnArg = NULL;
 #ifdef PTHREAD_ENABLE
 	pReturnArg = pThread->Run((void*)(*pThread));
 
-	LOG("Thread::Execute End :: ID :: %d", pthread_self());
+	LOG("Thread::Execute End :: ID :: %lu", (unsigned long)pthread_self());
 	pthread_exit(pReturnArg);
 #endif
 	return	NULL;
@@ -210,7 +219,7 @@ Run(void*	pArg)
     	{
    			throw Exception("pthread_detach Error");
     	}
-		LOG("Thread::Run - Detached ID :: %d", pthread_self());
+		LOG("Thread::Run - Detached ID :: %lu", (unsigned long)pthread_self());
     }
 
 	m_tRun	= PTHREAD_RUNNING;

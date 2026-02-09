@@ -290,9 +290,13 @@ void	SubShell::InitSubShellChild(const string& sPtyName, const string& sDir)
 		setenv ("MC_SID", strSid.c_str(), 1 );	// Avoid conflict with MC(Midnight Commander).
     }
     
-	sInitFile = "~/.linm/bashrc";
-	if (access (sInitFile.c_str(), R_OK) == -1)
-	    sInitFile = "~/.bashrc";
+	{
+		const char* pHome = getenv("HOME");
+		string sHome = pHome ? pHome : "";
+		sInitFile = sHome + "/.linm/bashrc";
+		if (access (sInitFile.c_str(), R_OK) == -1)
+			sInitFile = sHome + "/.bashrc";
+	}
 	
 	for ( int n = 0; n < 10; n++ )
 		cout << "[InitSubShellChild]---\n";
@@ -305,7 +309,7 @@ void	SubShell::InitSubShellChild(const string& sPtyName, const string& sDir)
     close (nPtySlave);
 
 	string sPS1 = "\\u@\\h:\\w\\$ ";
-	setenv ("PS1", sPS1.c_str(), sPS1.size() );
+	setenv ("PS1", sPS1.c_str(), 1 );
 	
 	execl ("/bin/bash", "bash", "-rcfile", sInitFile.c_str(), (char *) NULL);
     _exit (FORK_FAILURE);
@@ -378,7 +382,7 @@ int		SubShell::InitSubShell(const string& sDir)
 	InitRowMode();
 
 	string		sPtyName;
-	int			nPtySlave = 0;
+	int			nPtySlave = -1;
 	
     if (_nSubShellPty == 0)
 	{
@@ -498,19 +502,19 @@ int	SubShell::FeedSubShell(int nHow, bool bOnError)
 		{
 			char	cPtyBuffer[1024];
 			memset(cPtyBuffer, 0, sizeof(cPtyBuffer));
-		    nBytes = read (_nSubShellPty, cPtyBuffer, sizeof(cPtyBuffer));
-	
+		    nBytes = read (_nSubShellPty, cPtyBuffer, sizeof(cPtyBuffer) - 1);
+
 		    /* The subshell has died */
 		    if (nBytes == -1 && errno == EIO && !_bSubShellAlive)
 				return ERROR;
 
-			cPtyBuffer[nBytes] = 0;	/* Squash the final '\n' */
-	
-		    if (nBytes <= 0) 
+		    if (nBytes <= 0)
 		    {
 				LOG("read (subshell_pty...): %s\n", strerror(errno));
 				return ERROR;
 		    }
+
+			cPtyBuffer[nBytes] = 0;	/* Squash the final '\n' */
 
 			if ( cPtyBuffer[0] )
 			{
@@ -537,12 +541,12 @@ int	SubShell::FeedSubShell(int nHow, bool bOnError)
 	    /* Read the subshell's CWD and capture its prompt */
 		{
 			char	cSubShellCwd[1024];
-			nBytes = read (_nSubshellPipe[READ], cSubShellCwd, sizeof(cSubShellCwd));
-		    if (nBytes <= 0) 
+			nBytes = read (_nSubshellPipe[READ], cSubShellCwd, sizeof(cSubShellCwd) - 1);
+		    if (nBytes <= 0)
 		    {
 				LOG("read (subshell_pipe[READ]...): %s\r\n", strerror (errno));
 				return ERROR;
-		    }	
+		    }
 		    cSubShellCwd[nBytes] = 0;
 			//LOG("FeedSubShell _nSubshellPipe1[READ] [%s] !!!", cSubShellCwd);
 		    Synchronize ();
@@ -558,7 +562,7 @@ int	SubShell::FeedSubShell(int nHow, bool bOnError)
 	    /* Read from stdin, Write to the subshell */
 		{
 			char	cPtyBuffer[1024];
-			nBytes = read (STDIN_FILENO, cPtyBuffer, sizeof(cPtyBuffer));
+			nBytes = read (STDIN_FILENO, cPtyBuffer, sizeof(cPtyBuffer) - 1);
 		    if (nBytes <= 0)
 		    {
 				LOG("read (STDIN_FILENO, pty_buffer...): %s\r\n", strerror(errno));

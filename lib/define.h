@@ -53,7 +53,7 @@ typedef basic_string<wchar_t> wstring;
 using namespace std;
 
 typedef unsigned int uint;    ///< unsigned int
-typedef long long ullong;    ///< use the file size
+typedef unsigned long long ullong;    ///< use the file size
 
 #define        ERROR    -1        ///< ERROR
 #define        SUCCESS 0        ///< SUCCESS

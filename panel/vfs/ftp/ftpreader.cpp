@@ -820,6 +820,7 @@ askagain_ftp_copy:
 		}
 		else
 		{
+			FtpClose(pFtpNet);
 			tProgress.End();
 			if (FtpGetSocketID( _pDefaultFtpNet ) == 0)
 			{
@@ -1220,7 +1221,7 @@ askagain_ftp_paste:
 				return false;
 			}
 
-			while( !feof(fp) )
+			for(;;)
 			{
 				if (tProgress.isExit())
 				{
@@ -1233,9 +1234,10 @@ askagain_ftp_paste:
 						goto halt_ftp_paste;
 					}
 					tProgress.Start();
-				}				
-				
+				}
+
 				uLastSize = fread(buf, 1, sizeof(buf), fp);
+				if (uLastSize == 0) break;
 				if (FtpWrite(buf, uLastSize, pFtpNet) != uLastSize)
 				{
 					tProgress.End();

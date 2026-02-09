@@ -51,7 +51,7 @@ public:
 
 };
 
-static MemoryPool<File> &GetMemPool()
+inline MemoryPool<File> &GetMemPool()
 {
 	static MemoryPool<File> _pool;
 	return _pool;

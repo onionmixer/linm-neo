@@ -78,7 +78,7 @@ class File
 
 		inline bool	isExecute()
 		{
-			return sAttr[3] == 'x' ? true : false;
+			return sAttr.size() > 3 && sAttr[3] == 'x';
 		}
 		
 		///	\brief	생성자

@@ -30,7 +30,7 @@ namespace MLSUTIL {
 
         string line, var, val, section, name;
 
-        while (!getline(in, line).eof()) {
+        while (getline(in, line)) {
             if (line.empty()) continue;
             if (Tolower(line.substr(0, 10)) == "#!version ") {
                 _sVersion = Tolower(chop(line.substr(10)));
@@ -107,7 +107,7 @@ namespace MLSUTIL {
         bool bFirstSection = false;
 
         if (in) {
-            while (!getline(in, line).eof()) {
+            while (getline(in, line)) {
                 if (line.empty() || line[0] == '#' || line[0] == '$') {
                     out << line << endl;
                     continue;

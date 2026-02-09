@@ -17,6 +17,7 @@
  ******************************************************************************/
 
 #ifndef __FILESORT_H__
+#define __FILESORT_H__
 #include "define.h"
 #include "file.h"
 #include "colorcfgload.h"

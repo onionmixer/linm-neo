@@ -131,19 +131,19 @@ public:
 
 	NCurses_Panel*	GetPanel(int nNum)
 	{ 
-		if (nNum < 0 && nNum > 1) return NULL;
+		if (nNum < 0 || nNum > 1) return NULL;
 		return &_tPanel[nNum];
 	}
 
 	NCurses_Mcd*	GetMcd(int nNum)
 	{ 
-		if (nNum < 0 && nNum > 1) return NULL;
+		if (nNum < 0 || nNum > 1) return NULL;
 		return &_tMcd[nNum];
 	}
 
 	NCurses_Editor*	GetEditor(int nNum)
 	{ 
-		if (nNum < 0 && nNum > 1) return NULL;
+		if (nNum < 0 || nNum > 1) return NULL;
 		return &_tEditor[nNum];
 	}
 

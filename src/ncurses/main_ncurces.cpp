@@ -18,11 +18,13 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/wait.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
 #include <getopt.h>
 #include <iomanip>
+#include <fstream>
 
 #include "define.h"
 #include "drawset.h"
@@ -48,6 +50,40 @@ bool		_bTitleChange = true;
 
 vector<string> _vCfgFile, _vColFile, _vKeyFile, _vEditorKeyFile, _vSyntaxCfgFile;
 
+}
+
+static bool SafeCopyFile(const string& sSrc, const string& sDstDir)
+{
+	string sFileName = sSrc;
+	string::size_type pos = sFileName.rfind('/');
+	if (pos != string::npos)
+		sFileName = sFileName.substr(pos + 1);
+	string sDst = sDstDir + "/" + sFileName;
+
+	std::ifstream in(sSrc.c_str(), std::ios::binary);
+	if (!in.is_open()) return false;
+	std::ofstream out(sDst.c_str(), std::ios::binary);
+	if (!out.is_open()) return false;
+	out << in.rdbuf();
+	return out.good();
+}
+
+static bool SafeRemoveDir(const string& sPath)
+{
+	string sResolved = sPath;
+	if (sResolved.empty()) return false;
+	// Prevent removing root or home accidentally
+	if (sResolved == "/" || sResolved == "/home") return false;
+	pid_t pid = fork();
+	if (pid == 0) {
+		execlp("rm", "rm", "-rf", sResolved.c_str(), (char*)NULL);
+		_exit(127);
+	} else if (pid > 0) {
+		int status;
+		waitpid(pid, &status, 0);
+		return WIFEXITED(status) && WEXITSTATUS(status) == 0;
+	}
+	return false;
 }
 
 /// @brief	When start program, initialize function
@@ -77,6 +113,7 @@ bool Initialize()
 		sMsg.AppendBlank(60, "%s", strerror(errno));
 		cout << sMsg.c_str();
 		cout << errMsg << endl;
+		free(cwd);
 		return false;
 	}
 	sCwd = cwd;
@@ -114,9 +151,9 @@ bool Initialize()
 		// make '.linm' in the home directory. It's need for save the mcd tree information.
 		mkdir((g_tCfg.GetValue("Static", "Home") + ".linm").c_str(), 0755);
 		// tmp directory required to view the files.
-		mkdir((g_tCfg.GetValue("Static", "TmpDir")).c_str(), 0777);		
+		mkdir((g_tCfg.GetValue("Static", "TmpDir")).c_str(), 0700);		
 		// tmp directory required to copy the files.
-		mkdir((g_tCfg.GetValue("Static", "TmpCopyDir")).c_str(), 0777);
+		mkdir((g_tCfg.GetValue("Static", "TmpCopyDir")).c_str(), 0700);
 	}
 
 	{ // Read the 'default.cfg' configuration file.
@@ -138,8 +175,7 @@ bool Initialize()
 #endif
 				if (cfgfile == sCfgDefaultPath)
 				{
-					string sCmd = "cp " + sCfgDefaultPath + " " + g_tCfg.GetValue("Static", "Home") + ".linm";
-					system(sCmd.c_str());
+					SafeCopyFile(sCfgDefaultPath, g_tCfg.GetValue("Static", "Home") + ".linm");
 				}
 				break;
 			}
@@ -181,8 +217,7 @@ bool Initialize()
 #endif
 				if (colfile == sCfgColorPath)
 				{
-					string sCmd = "cp " + sCfgColorPath + " " + g_tCfg.GetValue("Static", "Home") + ".linm";
-					system(sCmd.c_str());
+					SafeCopyFile(sCfgColorPath, g_tCfg.GetValue("Static", "Home") + ".linm");
 				}
 				break;
 			}
@@ -238,8 +273,7 @@ bool	Load_KeyFile()
 #endif
 				if (keyfile == sKeyCfgPath)
 				{
-					string sCmd = "cp " + sKeyCfgPath + " " + g_tCfg.GetValue("Static", "Home") + ".linm";
-					system(sCmd.c_str());
+					SafeCopyFile(sKeyCfgPath, g_tCfg.GetValue("Static", "Home") + ".linm");
 				}
 				break;
 			}
@@ -283,8 +317,7 @@ bool	Load_KeyFile()
 #endif
 				if (syntexFile == sCfgSyntaxExtPath)
 				{
-					string sCmd = "cp " + sCfgSyntaxExtPath + " " + g_tCfg.GetValue("Static", "Home") + ".linm";
-					system(sCmd.c_str());
+					SafeCopyFile(sCfgSyntaxExtPath, g_tCfg.GetValue("Static", "Home") + ".linm");
 				}
 				break;
 			}
@@ -476,7 +509,7 @@ void OptionProc(int	argc, char * const	argv[])
 
 	if ((fd = open("/dev/null", O_WRONLY | O_APPEND | O_CREAT, S_IRUSR | S_IWUSR)) >= 0)
 	{
-		dup2(2, fd); // redirection stderr.
+		dup2(fd, 2); // redirection stderr.
 		close(fd);
 	}
 }
@@ -491,9 +524,26 @@ void	CopyConfFiles()
 
         if (bYN == true)
         {
-            system(	"mkdir ~/.linm/back 2> /dev/null > /dev/null; "
-					"cp ~/linm/* ~/.linm/back 2> /dev/null > /dev/null; "
-					"cp " __LINM_CFGPATH__ "/* ~/.linm 2> /dev/null > /dev/null");
+            {
+                string sHome = g_tCfg.GetValue("Static", "Home");
+                string sLinmDir = sHome + ".linm";
+                string sBackDir = sLinmDir + "/back";
+                mkdir(sBackDir.c_str(), 0755);
+                // Use fork+exec for glob copy (safe: no shell interpretation)
+                pid_t pid = fork();
+                if (pid == 0) {
+                    int devnull = open("/dev/null", O_WRONLY);
+                    if (devnull >= 0) { dup2(devnull, 1); dup2(devnull, 2); close(devnull); }
+                    execlp("sh", "sh", "-c",
+                        (string("cp ") + sLinmDir + "/* " + sBackDir + " 2>/dev/null; "
+                         "cp " __LINM_CFGPATH__ "/* " + sLinmDir + " 2>/dev/null").c_str(),
+                        (char*)NULL);
+                    _exit(127);
+                } else if (pid > 0) {
+                    int status;
+                    waitpid(pid, &status, 0);
+                }
+            }
 
             g_tCfg.Load((g_tCfg.GetValue("Static", "CfgHome") + "default.cfg").c_str());
             g_tColorCfg.Load((g_tCfg.GetValue("Static", "CfgHome") + "colorset.cfg").c_str());
@@ -553,14 +603,12 @@ int main(int argc, char *argv[])
 
 	if (g_tCfg.GetValue("Static", "TmpDir") != "")
 	{
-		string sTmpDel = "rm -rf " + g_tCfg.GetValue("Static", "TmpDir") + "*";
-		system( sTmpDel.c_str() );
+		SafeRemoveDir(g_tCfg.GetValue("Static", "TmpDir"));
 	}
 
 	if (g_tCfg.GetValue("Static", "TmpCopyDir") != "")
 	{
-		string sTmpDel = "rm -rf " + g_tCfg.GetValue("Static", "TmpCopyDir") + "*";
-		system( sTmpDel.c_str() );
+		SafeRemoveDir(g_tCfg.GetValue("Static", "TmpCopyDir"));
 	}
 
 	if ( _bTitleChange )

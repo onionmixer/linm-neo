@@ -21,21 +21,24 @@ FSWatchDetect::~FSWatchDetect() {
 
 bool FSWatchDetect::stop() {
     try {
-        if (_pThread && _pActiveMonitor && _pActiveMonitor->is_running()) {
-            {
-                std::lock_guard<std::mutex> guard(_mutex);
-                _pActiveMonitor->stop();
-                if (_pActiveMonitor) {
-                    delete _pActiveMonitor;
-                    _pActiveMonitor = nullptr;
-                }
-            }
-            _pThread->join();
-            if ( _pThread ) {
-                delete _pThread;
-                _pThread = nullptr;
+        monitor *monToStop = nullptr;
+        {
+            std::lock_guard<std::mutex> guard(_mutex);
+            if (_pActiveMonitor) {
+                monToStop = _pActiveMonitor;
+                _pActiveMonitor = nullptr;
             }
         }
+        if (monToStop) {
+            monToStop->stop();
+        }
+        if (_pThread) {
+            if (_pThread->joinable())
+                _pThread->join();
+            delete _pThread;
+            _pThread = nullptr;
+        }
+        delete monToStop;
     } catch( ... ) {
         LOG( "FSWatchDetect::stop Exception !!!" );
     }
@@ -69,9 +72,11 @@ bool FSWatchDetect::start(const vector<string> &vPaths, std::function<void (cons
     this->_vPaths = vPaths;
     this->_func = func;
 
-    this->_pThread = new std::thread( [&] () {
+    this->_pThread = new std::thread( [this] () {
         // pActiveMonitor->set_directory_only(true);
-        _pActiveMonitor->start();
+        std::lock_guard<std::mutex> guard(_mutex);
+        if (_pActiveMonitor)
+            _pActiveMonitor->start();
     });
     return true;
 }

@@ -391,7 +391,7 @@ void	Editor::Selected_Del()
 		_vDoInfo.push_back(new DoInfo(_nCurLine, _nCurCulumn, WStr));
 
 		WStr1 = WStr.substr(0, _EditSelect.x1);
-		WStr2 = WStr.substr(_EditSelect.x2, WStr1.size() - _EditSelect.x2);
+		WStr2 = WStr.substr(_EditSelect.x2, WStr.size() - _EditSelect.x2);
 		WStr = WStr1 + WStr2;
 		_vText[_EditSelect.y1].wLine = WStr;
 		PostUpdateLines( _EditSelect.y1 );
@@ -744,6 +744,7 @@ bool	Editor::FileSaveAs()
 		case 3:
 			if (Save(sPath+sFilename, AUTO, !_bDosMode) == true)
 				_nConvInfo = _vDoInfo.size(); // save the save point
+			break;
 		case 4:
 			return false;
 	}

@@ -336,9 +336,13 @@ STACK_DIRECTION = 0 => direction of growth unknown */
 #cmakedefine VERSION "@VERSION@"
 
 /* Get 64-bit file size support */
+#ifndef _FILE_OFFSET_BITS
 #cmakedefine _FILE_OFFSET_BITS @_FILE_OFFSET_BITS@
+#endif
 
+#ifndef _LARGEFILE_SOURCE
 #cmakedefine _LARGEFILE_SOURCE
+#endif
 
 /* cygwin compile. */
 #cmakedefine __CYGWIN_C__
@@ -395,16 +399,12 @@ doesn't define it. */
 #cmakedefine01 HAVE_FSEVENTS_FILE_EVENTS
 #cmakedefine01 HAVE_STRUCT_STAT_ST_MTIMESPEC
 #cmakedefine01 HAVE_CFLOCALECOPYCURRENT
-#cmakedefine01 HAVE_FSEVENTS_FILE_EVENTS
 #cmakedefine01 HAVE_CXX_ATOMIC
 #cmakedefine01 HAVE_CXX_MUTEX
 #cmakedefine01 HAVE_CORESERVICES_CORESERVICES_H
 
 /* Define to 1 if `st_mtime' is a member of `struct stat'. */
 #cmakedefine01 HAVE_STRUCT_STAT_ST_MTIME
-
-/* Define to 1 if `st_mtimespec' is a member of `struct stat'. */
-#cmakedefine01 HAVE_STRUCT_STAT_ST_MTIMESPEC
 
 /* Define if the thread_local storage specified is available. */
 #define HAVE_CXX_THREAD_LOCAL 1

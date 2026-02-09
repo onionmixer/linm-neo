@@ -145,7 +145,7 @@ namespace MLS {
     public:
         Editor();
 
-        ~Editor();
+        virtual ~Editor();
 
         void Destroy();
 

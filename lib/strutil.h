@@ -53,7 +53,7 @@ namespace MLSUTIL
 			
 		public:
 			String() {}
-			String(const String& str) { m_str = (char*)str; }
+			String(const String& str) { m_str = str.m_str; }
 			String(const string& str) { m_str = str; }
 			String(const char* fmt, ...);
 
@@ -65,7 +65,7 @@ namespace MLSUTIL
 			void	Printf(const char* fmt, ...);
 			void	Append(const char* fmt, ...);
 			
-			void	Append(int /*n*/, const char nChar) 	{ m_str.append(1, nChar); }
+			void	Append(int n, const char nChar) 	{ m_str.append(n, nChar); }
 			void	Append(const string& 	str)		{ m_str.append(str); }
 			void	Append(String 	str)				{ m_str.append(str.c_str()); }
 			
@@ -108,8 +108,6 @@ namespace MLSUTIL
 			const string&		Get() const	{ return m_str; }
 			const char*	c_str() const { return m_str.c_str(); }
 
-			/// @brief	(char*)
-			operator	char*()	const		{ return (char*)m_str.c_str();	}
 			/// @brief	(const char*)
 			operator	const char*() const	{ return m_str.c_str();	}
 			/// @brief	(const string)
@@ -126,27 +124,27 @@ namespace MLSUTIL
 			}
 	
 			/// @brief	operator ex) Text3 = Text + Text2
-			String&	operator= (char* tData) 		{	clear(); Append(tData); return *this;}
-			String&	operator= (const char* tData) 	{	clear(); Append(tData); return *this; }
-			String&	operator= (string tString) 		{	clear(); Append(tString.c_str()); return *this; }
+			String&	operator= (char* tData) 		{	clear(); Append(string(tData)); return *this;}
+			String&	operator= (const char* tData) 	{	clear(); Append(string(tData)); return *this; }
+			String&	operator= (string tString) 		{	clear(); Append(tString); return *this; }
 			String&	operator= (String tString) 		{	clear(); Append(tString); return *this; }
 			String&	operator= (const char nChar)	{   clear(); m_str.append(1, nChar); return *this; }
 	
 			/// @brief	= 형태의 operator ex) Text3 = Text + Text2
 			String	operator+ (const char* tData) {
-				String	tString; tString.Append(tData); return tString;
+				String	tString(*this); tString.Append(string(tData)); return tString;
 			}
 			String	operator+ (char* tData)	{
-				String	tString; tString.Append(tData); return tString;
+				String	tString(*this); tString.Append(string(tData)); return tString;
 			}
 			String	operator+ (string  tString2) {
-				String	tString; tString.Append(tString2); return tString;
+				String	tString(*this); tString.Append(tString2); return tString;
 			}
 			String	operator+ (String&  tString2) {
-				String	tString; tString.Append(tString2); return tString;
+				String	tString(*this); tString.Append(tString2); return tString;
 			}
 
-			friend ostream& operator>>(ostream& output, String& tString)
+			friend ostream& operator<<(ostream& output, String& tString)
 			{
 				output << tString.c_str();
 				return output;

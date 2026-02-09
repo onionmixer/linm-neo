@@ -358,7 +358,7 @@ void	NCurses_Mcd::Key_PageDown()
 	if (pNode)
 	{
 		LOG("pNode [%d]", pNode->nRow);
-		LOG("pNode [%d]", pNode->tFile.sFullName.c_str());
+		LOG("pNode [%s]", pNode->tFile.sFullName.c_str());
 		SetCur(pNode->tFile.sFullName);
 	}
 }
@@ -372,7 +372,7 @@ void	NCurses_Mcd::Key_PageUp()
 	if (pNode)
 	{
 		LOG("pNode [%d]", pNode->nRow);
-		LOG("pNode [%d]", pNode->tFile.sFullName.c_str());
+		LOG("pNode [%s]", pNode->tFile.sFullName.c_str());
 		SetCur(pNode->tFile.sFullName);
 	}
 }

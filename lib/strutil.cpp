@@ -347,7 +347,7 @@ namespace	MLSUTIL
 			return str;
         #else
             string 	s = str;
-			if (s.size() == 0 && s.size() > 10000000) return L"";
+			if (s.size() == 0 || s.size() > 10000000) return L"";
 			wstring		wstr;
 			
 			wchar_t*	w = new wchar_t[s.size()+1];
@@ -382,7 +382,7 @@ namespace	MLSUTIL
 				memset(&mbchar, 0, sizeof(mbchar));
 				if (wctomb((char*)&mbchar, s[n]) == -1)
 				{
-					LOG("wcstombs func err [%d] num[%d] [%d] [%d] [%s]",
+					LOG("wcstombs func err [%d] num[%d] [%d] [%s]",
 						(int)s[n], n, errno, strerror(errno));
 				}
 				str.append(mbchar);
@@ -413,7 +413,7 @@ namespace	MLSUTIL
 				{
 					if ((nWidth = mk_wcwidth(wc[n])) == -1)
 					{
-						LOG("krstrlen :: wcwidth func err [%d] ['%s'::%d] [%d] [%d] [%s]",
+						LOG("krstrlen :: wcwidth func err [%d] ['%s'::%zu] [%d] [%s]",
 							n, sSrc.c_str(), sSrc.size(), errno, strerror(errno));
 						nWidth = 0;
 						continue;
@@ -486,7 +486,7 @@ namespace	MLSUTIL
 				{
 					if ((nWidth = mk_wcwidth(wsrc[n])) == -1)
 					{
-						LOG("krstrncpy wcwidth func err [%d] [%s] [%d] [%d] [%s]",
+						LOG("krstrncpy wcwidth func err [%d] [%s] [%d] [%s]",
 							n, sSrc.c_str(), errno, strerror(errno));
 						nWidth = 1;
 						continue;
@@ -504,7 +504,7 @@ namespace	MLSUTIL
 					memset(&mbchar, 0, sizeof(mbchar));
 					if (wctomb((char*)&mbchar, wsrc[n]) == -1)
 					{
-						LOG("krstrncpy wcstombs func err [%d] num[%d] [%d] [%d] [%s]",
+						LOG("krstrncpy wcstombs func err [%d] num[%d] [%d] [%s]",
 							(int)wsrc[n], n, errno, strerror(errno));
 					}
 					else
@@ -550,23 +550,28 @@ namespace	MLSUTIL
 		char* data = buf_data;
 		int data_size = sizeof(buf_data);
 		int ret = 0;
-	
+
+		va_list argCopy;
+		va_copy(argCopy, argList);
+
 		memset(&buf_data, 0, sizeof(buf_data));
 		ret = vsnprintf(data, data_size, fmt, argList);
-		++ret;	
-	
+		++ret;
+
 		if(ret > (int)sizeof(buf_data))
 		{
 			data = (char*)malloc(ret);
 			if (data == NULL)
 			{
 				cerr << "Buffer over flow" << endl;
+				va_end(argCopy);
 				return ;
 			}
 			memset(data, 0, sizeof(char)*ret);
 			data_size = ret;
-			vsnprintf(data, data_size, fmt, argList);
+			vsnprintf(data, data_size, fmt, argCopy);
 		}
+		va_end(argCopy);
 	
 		m_str = data;
 		if(data != buf_data)
@@ -621,9 +626,9 @@ namespace	MLSUTIL
 	
 	void	String::AppendBlank(const string& str, int nSize)
 	{
-		char cData[nSize+1];
-		memset(cData, 0, nSize+1);
-		memset(cData, ' ', nSize);
+		vector<char> vData(nSize+1, ' ');
+		vData[nSize] = '\0';
+		char* cData = vData.data();
 		if ((int)str.size() < nSize)
 			strncpy(cData, str.c_str(), str.size());
 		else
@@ -660,14 +665,14 @@ namespace	MLSUTIL
 			va_end(argptr);
 		}
 	
-		char cData[nSize+1];
-		memset(cData, 0, nSize+1);
-		memset(cData, ' ', nSize);
+		vector<char> vData2(nSize+1, ' ');
+		vData2[nSize] = '\0';
+		char* cData = vData2.data();
 		if ((int)strlen(data) < nSize)
 			strncpy(cData, data, strlen(data));
 		else
 			strncpy(cData, data, nSize);
-			
+
 		if(data != buf_data)
 		{
 			if (data != NULL) free(data);

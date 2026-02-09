@@ -7,7 +7,7 @@ include_directories(${CMAKE_SOURCE_DIR}/lib
 
 ########### next target ###############
 
-if( NOT DISABLE_SAMBA AND SMBCLIENT_FOUND )
+if( __LINM_SAMBA_USE__ AND SMBCLIENT_FOUND )
     SET(linmpluginsmb_LIB_INCLUDES
             SMBReader.h
             )
@@ -15,4 +15,7 @@ if( NOT DISABLE_SAMBA AND SMBCLIENT_FOUND )
        SMBReader.cpp
     )
     add_library(linmpluginsmb STATIC ${linmpluginsmb_LIB_SRCS} ${linmpluginsmb_LIB_INCLUDES})
+    if ( SMBCLIENT_INCLUDE_DIRS )
+        target_include_directories(linmpluginsmb PRIVATE ${SMBCLIENT_INCLUDE_DIRS})
+    endif()
 endif()

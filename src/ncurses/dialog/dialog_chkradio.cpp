@@ -114,7 +114,7 @@ void CheckRadioButton::Draw()
 	}
 	else
 	{
-		mvwprintw(pWin, y, x, (char*)_sMsg.c_str());
+		mvwprintw(pWin, y, x, "%s", _sMsg.c_str());
 		
 		if (_bCheck)
 		{

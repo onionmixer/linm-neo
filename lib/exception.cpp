@@ -117,16 +117,16 @@ Exception::Exception(int nErrNo, const char *fmt, ...)
 
 /// @brief	return the error contents.
 /// @return return the error string
-char*	Exception::GetInfo(void)
+const char*	Exception::GetInfo(void)
 {
-	return (char*)_strError.c_str();
+	return _strError.c_str();
 }
 
 
 /// @brief	if cout of the data, it's not used the char*.
-ostream&	operator>>(ostream& output, Exception& tEx)
+ostream&	operator<<(ostream& output, Exception& tEx)
 {
-	return output << (char*)tEx;
+	return output << (const char*)tEx;
 }
 
 };

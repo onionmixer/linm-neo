@@ -53,6 +53,7 @@ void	MsgWaitEnd(void* p)
 /// @return SUCCESS
 int		InputBox(const string& sTitle, string& sInputStr, bool bPasswd )
 {
+	if ( !g_pDialog ) return ERROR;
 	return g_pDialog->InputBox(sTitle, sInputStr, bPasswd);
 }
 
@@ -65,23 +66,27 @@ int 	SelectBox(	const string& sTitle,
 					vector<string>& vMsgStr,
 					int n)
 {
+	if ( !g_pDialog ) return ERROR;
 	return g_pDialog->SelectBox(sTitle, vMsgStr, n);
 }
 
 ///	@brief	 key read
 int 	GetChar(bool bNoDelay )
 {
+	if ( !g_pDialog ) return ERROR;
 	return g_pDialog->GetChar(bNoDelay);
 }
 
 int		SetKeyBreakUse( bool bBreak )
 {
+	if ( !g_pDialog ) return ERROR;
 	return g_pDialog->SetKeyBreakUse( bBreak );
 }
 
 /// @brief	text box
 int		TextListBox( const string& sTitle, vector<string>& vTextStr, bool bCurShow, int width )
 {
+	if ( !g_pDialog ) return ERROR;
 	return g_pDialog->TextBox( sTitle, vTextStr, bCurShow, width);
 }
 
@@ -94,7 +99,7 @@ CommonProgress::CommonProgress(const string& sTitle, const string& sMsg, bool bD
 
 CommonProgress::~CommonProgress()
 {
-	if (_bStarted) _pProgress->End();
+	if (_bStarted && _pProgress) _pProgress->End();
 	_bStarted = false;
 }
 
@@ -136,25 +141,25 @@ bool CommonProgress::isExit()
 
 void CommonProgress::show()
 {
+	if (!_pProgress) return;
 	_pProgress->_sTitle = _sTitle;
 	_pProgress->_sMsg = _sMsg;
 	_pProgress->_bDouble = _bDouble;
-
-	if (_pProgress)
-		_pProgress->Show();
+	_pProgress->Show();
 }
 
 void CommonProgress::redraw()
 {
+	if (!_pProgress) return;
 	_pProgress->_sTitle = _sTitle;
 	_pProgress->_sMsg = _sMsg;
 	_pProgress->_bDouble = _bDouble;
-
 	_pProgress->Redraw();
 }
 
 void CommonProgress::setCount(int nCnt, int nCnt2)
 {
+	if (!_pProgress) return;
 	_pProgress->setCount(nCnt, nCnt2);
 }
 
@@ -162,6 +167,7 @@ void CommonProgress::Start(void* pArg)
 {
 	try
 	{
+		if (!_pProgress) return;
 		_bStarted = true;
 		_pProgress->_bStarted = true;
 		show();
@@ -170,6 +176,7 @@ void CommonProgress::Start(void* pArg)
 	}
 	catch(Exception& ex)
 	{
+		LOG("CommonProgress::Start exception: %s", ex.GetInfo());
 	}
 }
 
@@ -177,6 +184,7 @@ void CommonProgress::End()
 {
 	try
 	{
+		if (!_pProgress) return;
 		_pProgress->_bStarted = false;
 		//_pProgress->Cancel(); // error occurred.
 		_pProgress->End();
@@ -184,6 +192,7 @@ void CommonProgress::End()
 	}
 	catch(Exception& ex)
 	{
+		LOG("CommonProgress::End exception: %s", ex.GetInfo());
 	}
 }
 

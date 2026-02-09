@@ -628,21 +628,21 @@ void NCurses_Editor::Draw()
 	else							sInfo3 = "[US]";
 
 	setcol(_tColorEditInfoA, _pWin);
-	mvwprintw(_pWin, height-nBoxLine-1, width-scrstrlen(sInfo1)-nBoxLine, (char*)sInfo1.c_str());
+	mvwprintw(_pWin, height-nBoxLine-1, width-scrstrlen(sInfo1)-nBoxLine, "%s", sInfo1.c_str());
 	if (_bDosMode)
 	{
 		setcol(_tColorEditInfoA, _pWin);
-		mvwprintw(_pWin, height-nBoxLine-1, width-scrstrlen(sInfo2)-scrstrlen(sInfo1)-nBoxLine, (char*)sInfo2.c_str());
+		mvwprintw(_pWin, height-nBoxLine-1, width-scrstrlen(sInfo2)-scrstrlen(sInfo1)-nBoxLine, "%s", sInfo2.c_str());
 	}
 	setcol(_tColorEditInfo, _pWin);
-	mvwprintw(_pWin,height-nBoxLine-1, width-scrstrlen(sInfo3)-scrstrlen(sInfo2)-scrstrlen(sInfo1)-nBoxLine, (char*)sInfo3.c_str());
+	mvwprintw(_pWin,height-nBoxLine-1, width-scrstrlen(sInfo3)-scrstrlen(sInfo2)-scrstrlen(sInfo1)-nBoxLine, "%s", sInfo3.c_str());
 
 	setcol(_tColorEditInfo, _pWin);
 	snprintf(sLineFormat, sizeof(sLineFormat), "Line: %d Col: %d (%d%%) ",
 				_nCurLine+1, _nCurCulumn, (int)((_nCurLine+1)*100 / _vText.size()) );
 	mvwprintw(_pWin, height-nBoxLine-1,
 			  width-scrstrlen(sLineFormat)-scrstrlen(sInfo3)-scrstrlen(sInfo2)-scrstrlen(sInfo1)-nBoxLine,
-			  sLineFormat);
+			  "%s", sLineFormat);
 	
 	if (_bReadOnly == true)
 	{

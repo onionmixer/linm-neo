@@ -137,7 +137,7 @@ namespace MLSUTIL
 			p = (char*)malloc (sizeof(char) * (strlen (str) + 1));
 			if (!p)
 				return NULL;
-				strcpy (p, str);
+			strcpy (p, str);
 			return p;
 		}
 	
@@ -147,9 +147,11 @@ namespace MLSUTIL
 			return NULL;
 	
 		p = (char*)malloc (sizeof(char) * (strlen (str) + 1));
+		if (p == NULL) {
+			iconv_close (cd);
+			return NULL;
+		}
 		strcpy (p, str);
-	
-		if (p == NULL) return NULL;
 	
 		len = strlen (p);
 		startp = p;
@@ -177,7 +179,14 @@ namespace MLSUTIL
 					{
 						size_t used = outp - dest;
 						outbuf_size *= 2;
-						dest = (char*)realloc (dest, outbuf_size);
+						char *newdest = (char*)realloc (dest, outbuf_size);
+						if (!newdest) {
+							free(dest);
+							free(startp);
+							iconv_close(cd);
+							return NULL;
+						}
+						dest = newdest;
 	
 						outp = dest + used;
 						outbytes_remaining = outbuf_size - used - 1;        /* -1 for null */

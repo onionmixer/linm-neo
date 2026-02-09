@@ -9,13 +9,26 @@ include_directories(
 SET(ssh_test_SRCS ssh2_sample.cpp)
 
 add_executable(ssh_test ${ssh_test_SRCS} ${linm_INCLUDES})
-target_link_libraries(ssh_test mlscommon vfsplugin dialog editor panelcommon linmpluginftp ${LIBICONV} ${LIBINTL} ${NCURSES_LIB})
+
+# ncurses: prefer wide-char variant
+if (NCURSESW_LIB)
+    target_link_libraries(ssh_test ${NCURSESW_LIB})
+elseif (NCURSES_LIB)
+    target_link_libraries(ssh_test ${NCURSES_LIB})
+else()
+    target_link_libraries(ssh_test ${CURSES_LIB})
+endif()
+
+target_link_libraries(ssh_test mlscommon vfsplugin dialog editor panelcommon linmpluginftp)
+
+if (LIBICONV AND LIBINTL)
+    target_link_libraries(ssh_test ${LIBICONV} ${LIBINTL})
+endif()
 
 add_dependencies(ssh_test linmpluginsftp)
-target_link_libraries(ssh_test linmpluginsftp ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} ${LIBSSH2}  )
+target_link_libraries(ssh_test linmpluginsftp ${OPENSSL_CRYPTO_LIBRARY} ${OPENSSL_SSL_LIBRARY} ${LIBSSH2_LIBRARY})
 
     if ( SOURCEHIGHLIGHT )
         target_link_libraries(ssh_test ${SOURCEHIGHLIGHT} )
     endif ( SOURCEHIGHLIGHT )
 endif ()
-

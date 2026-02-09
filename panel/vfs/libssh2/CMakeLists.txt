@@ -6,9 +6,9 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/panel/vfs/ftp
         ${CMAKE_SOURCE_DIR}/panel/vfs/libssh2 )
 
-if (NOT DISABLE_SFTP AND OPENSSL_FOUND)
-    message( STATUS "openssl include directory : ${OPENSSL_INCLUDE_DIR} ${LIBSSH_LIBRARY_INCLUDE_DIRS}" )
-    include_directories(${OPENSSL_INCLUDE_DIR} ${LIBSSH_LIBRARY_INCLUDE_DIRS})
+if (__LINM_SFTP_USE__ AND OPENSSL_FOUND)
+    message( STATUS "openssl include directory : ${OPENSSL_INCLUDE_DIR} ${LIBSSH2_INCLUDE_DIRS}" )
+    include_directories(${OPENSSL_INCLUDE_DIR} ${LIBSSH2_INCLUDE_DIRS})
 
     SET(linmpluginsftp_LIB_INCLUDES
             SFtpReader.h

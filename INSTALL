@@ -1,17 +1,52 @@
-# How to build from source
+# How to Build LinM from Source
 
 ## Requirements
 
-### Common requirements
+### Build Tools
 
-In order to build linm, you need to install several components:
+- A C++ compiler with C++11 support (GCC 7+ or Clang 5+)
+- [CMake](https://cmake.org) >= 3.10
 
-- A C compiler (C++11)
-- [CMake](http://www.cmake.org) >= 2.10.0.
+### Required Libraries
 
-optional:
-- [libz](http://www.zlib.net) >= 1.2
-- [openssl](http://www.openssl.org) >= 1.0.0
-- [libssh2](http://www.libssh2.org]) >= 1.4.0
-- [source-highlight](https://www.gnu.org/software/src-highlite/) >= 3.1.8
+- [ncurses / ncursesw](https://www.gnu.org/software/ncurses/ncurses.html) >= 5.3
+  ncursesw is preferred for UTF-8 encoding support.
 
+### Optional Libraries
+
+- [OpenSSL](https://www.openssl.org) >= 1.0 (for SFTP support)
+- [libssh2](https://www.libssh2.org) >= 1.4.0 (for SFTP support)
+- [libsmbclient](https://www.samba.org) (for SMB/CIFS support)
+
+### Installing Dependencies
+
+Ubuntu / Debian:
+
+    sudo apt install build-essential cmake libncursesw5-dev libssl-dev libssh2-1-dev libsmbclient-dev
+
+Fedora / RHEL:
+
+    sudo dnf install gcc-c++ cmake ncurses-devel openssl-devel libssh2-devel libsmbclient-devel
+
+## Building
+
+    mkdir build
+    cd build
+    cmake ..
+    make -j$(nproc)
+
+## CMake Options
+
+    -DCMAKE_INSTALL_PREFIX=PATH   Change the installation prefix (default: /usr/local)
+    -DPTHREAD_ENABLE=OFF          Build without pthread support
+    -DCMAKE_BUILD_TYPE=Debug      Enable debug build
+
+## Installing
+
+    sudo make install
+
+Executables are installed to ${CMAKE_INSTALL_PREFIX}/bin (default: /usr/local/bin).
+Configuration files are installed to /etc/linm (system-wide) or $HOME/.linm (per-user).
+
+To have the shell prompt return to the directory where you ended LinM,
+re-login after installation.

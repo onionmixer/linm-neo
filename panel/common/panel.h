@@ -150,6 +150,7 @@ public:
 
 	const string		GetPath() const
 	{
+		if (!_pReader) return "";
 		return _pReader->GetPath();
 	}
 

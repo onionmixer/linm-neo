@@ -45,6 +45,7 @@ namespace MLSUTIL
 		va_list argptr;
 		int ret;
 		FILE *fp = fopen(_LogFile.c_str(), "a");
+		if (!fp) return;
 		va_start(argptr, fmt);
 		vfprintf(fp, fmt, argptr);
 		fprintf(fp, "\n");
@@ -62,6 +63,7 @@ namespace MLSUTIL
 		if (!_bLog) return;
 
 		FILE *fp = fopen(_LogFile.c_str(), "a");
+		if (!fp) return;
 		fprintf(fp, "%-15s:%-3d] ", strDebugFile, nDebugLine);
 		fclose(fp);
 	}

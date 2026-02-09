@@ -106,16 +106,17 @@ int Selection::ExpandDir(Reader* pReader, bool bCtlBreak)
 		while(pReader->Next())
 		{
 			File*	pFile = new File;
-			if (!pReader->GetInfo(*pFile)) continue;
+			if (!pReader->GetInfo(*pFile)) { delete pFile; continue; }
 
 			// ESC를 누르면 STOP 된다.
-			if (bCtlBreak && GetChar(true)==27) 
+			if (bCtlBreak && GetChar(true)==27)
 			{
+				delete pFile;
 				bBreak = true;
 				break;
 			}
-			
-			if (pFile->sName == "." || pFile->sName == "..")	continue;
+
+			if (pFile->sName == "." || pFile->sName == "..")	{ delete pFile; continue; }
 
 			if (pFile->bDir)
 			{

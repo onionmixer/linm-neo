@@ -116,12 +116,14 @@ Wait(void)
 	void*	pResult = NULL;
 	#ifdef PTHREAD_ENABLE
 	int		nResult;
+	Lock();
 	while(m_nReady != 1)
 	{
 		nResult = pthread_cond_wait(&m_tAvail,	&m_tMutex);
-		if(nResult) throw	Exception("Wait::pthread_cond_wait");
+		if(nResult) { Unlock(); throw Exception("Wait::pthread_cond_wait"); }
 	}
 	pResult		= m_pData;
+	Unlock();
 	#endif
 	return	pResult;
 }
@@ -136,22 +138,34 @@ TimedWait(int nMicroseconds, int nSeconds)
 	void*		pResult = NULL;
 	#ifdef PTHREAD_ENABLE
 	timespec	tTimeSpec;
+	Lock();
 	while(m_nReady	!= 1)
 	{
-		tTimeSpec.tv_sec	= nSeconds;
-		tTimeSpec.tv_nsec	= nMicroseconds;
+		clock_gettime(CLOCK_REALTIME, &tTimeSpec);
+		tTimeSpec.tv_sec	+= nSeconds;
+		tTimeSpec.tv_nsec	+= (long)nMicroseconds * 1000L;
+		if (tTimeSpec.tv_nsec >= 1000000000L) {
+			tTimeSpec.tv_sec += tTimeSpec.tv_nsec / 1000000000L;
+			tTimeSpec.tv_nsec %= 1000000000L;
+		}
 		nResult	= pthread_cond_timedwait(&m_tAvail, &m_tMutex, &tTimeSpec);
-		
+
 		switch(nResult)
 		{
+			case 0:
+				break;
 			case ETIMEDOUT:
-				return	pResult = (void*)-1;
+				Unlock();
+				return	(void*)-1;
 			case EINTR:
+				continue;
 			default:
+				Unlock();
 				throw Exception("TimedWait::pthread_cond_timedwait");
 		}
 	}
 	pResult	= m_pData;
+	Unlock();
 	#endif
 	return	pResult;
 }
@@ -162,9 +176,11 @@ MlsMutex::
 WaitEnd(void)
 {
 	#ifdef PTHREAD_ENABLE
+	Lock();
 	m_pData		= NULL;
 	m_nReady	= 0;
 	int nResult	= pthread_cond_signal(	&m_tReady);
+	Unlock();
 	if(nResult) throw	Exception("WaitEnd::pthread_cond_signal");
 	#endif
 }

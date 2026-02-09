@@ -11,6 +11,7 @@
 #include "mainframe_view.h"
 #include "subshell.h"
 #include <fcntl.h>
+#include <sys/wait.h>
 
 using namespace MLS;
 using namespace MLSUTIL;
@@ -900,12 +901,14 @@ void	CmdPanelImp::CopyPaste()
 
 		if (g_tCfg.GetValue("Static", "TmpCopyDir") != "")
 		{
-			string sTmpDel = "rm -rf " + g_tCfg.GetValue("Static", "TmpCopyDir") + "*";
-			system( sTmpDel.c_str() );
+			string sTmpPath = g_tCfg.GetValue("Static", "TmpCopyDir");
+			pid_t pid = fork();
+			if (pid == 0) { execlp("rm", "rm", "-rf", sTmpPath.c_str(), (char*)NULL); _exit(127); }
+			if (pid > 0) { int st; waitpid(pid, &st, 0); }
 		}
 
 		// copy to temp directory and then, copy from temp directory to copy directoy.
-		if (pReader->Copy(	_tMainSelection, 
+		if (pReader->Copy(	_tMainSelection,
 							g_tCfg.GetValue("Static", "TmpCopyDir"),
 							 &tSelectionCopy) )
 		{
@@ -1006,13 +1009,15 @@ void 	CmdPanelImp::CutPaste()
 
 		if (g_tCfg.GetValue("Static", "TmpCopyDir") != "")
 		{
-			string sTmpDel = "rm -rf " + g_tCfg.GetValue("Static", "TmpCopyDir") + "*";
-			system( sTmpDel.c_str() );
+			string sTmpPath = g_tCfg.GetValue("Static", "TmpCopyDir");
+			pid_t pid = fork();
+			if (pid == 0) { execlp("rm", "rm", "-rf", sTmpPath.c_str(), (char*)NULL); _exit(127); }
+			if (pid > 0) { int st; waitpid(pid, &st, 0); }
 		}
 
 		// copy to temp directory and then, copy from temp directory to copy directoy.
-		if (pReader->Copy(	_tMainSelection, 
-							g_tCfg.GetValue("Static", "TmpCopyDir"), 
+		if (pReader->Copy(	_tMainSelection,
+							g_tCfg.GetValue("Static", "TmpCopyDir"),
 							&tSelectionMove))
 		{
 			Reader*		pCurReader = _pPanel->GetReader();
@@ -1376,8 +1381,10 @@ void	CmdPanelImp::TouchFile()
 	else
 		sFilename = g_tCfg.GetValue("Static", "TmpDir") + sFilename;
 
-	sFilename = "touch " + sFilename;
-	system( sFilename.c_str() );
+	{
+		int fd = open(sFilename.c_str(), O_WRONLY | O_CREAT | O_NOCTTY, 0644);
+		if (fd >= 0) { futimens(fd, NULL); close(fd); }
+	}
 	Refresh();
 }
 
@@ -2175,13 +2182,21 @@ void	CmdPanelImp::Diff()
 		tFileTmp.sName = tFile1.sName + ".diff";
 		tFileTmp.sFullName = g_tCfg.GetValue("Static", "TmpDir") + tFileTmp.sName;
 
-		sCommand = 	sDiffProgram + " " + 
-					tFile1.sFullName + " " + 
-					tFile2.sFullName + " > " + tFileTmp.sFullName;
+		LOG("Diff [%s] [%s] > [%s]", sDiffProgram.c_str(), tFile1.sFullName.c_str(), tFileTmp.sFullName.c_str());
 
-		LOG("Diff [%s]", sCommand.c_str());
-
-		system( sCommand.c_str() );
+		{
+			pid_t pid = fork();
+			if (pid == 0) {
+				int outfd = open(tFileTmp.sFullName.c_str(), O_WRONLY | O_CREAT | O_TRUNC, 0644);
+				if (outfd >= 0) { dup2(outfd, STDOUT_FILENO); close(outfd); }
+				execlp(sDiffProgram.c_str(), sDiffProgram.c_str(),
+					   tFile1.sFullName.c_str(), tFile2.sFullName.c_str(), (char*)NULL);
+				_exit(127);
+			} else if (pid > 0) {
+				int st;
+				waitpid(pid, &st, 0);
+			}
+		}
 
 		EditorChoice( true, g_tCfg.GetValue("Default", "ExtEditor", "vi"), &tFileTmp );
 
