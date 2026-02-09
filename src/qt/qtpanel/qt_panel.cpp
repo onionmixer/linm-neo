@@ -241,6 +241,27 @@ void	Qt_Panel::TabLabelChg()
 	}
 }
 
+void	Qt_Panel::TabLabelSet( const QString& strName )
+{
+	if ( _pTabParent )
+		_pTabParent->setTabLabelChg( this, strName );
+}
+
+void	Qt_Panel::SetViewColumn( int nViewColumn )
+{
+	_nViewColumn = nViewColumn;
+}
+
+bool	Qt_Panel::GetShowFileOwner() const
+{
+	return _bShowFileOwner;
+}
+
+void	Qt_Panel::SetShowFileOwner( bool bShow )
+{
+	_bShowFileOwner = bShow;
+}
+
 void	Qt_Panel::mouseDoubleClickEvent( QMouseEvent* event )
 {
 	if( event->button() == Qt::LeftButton )
@@ -268,33 +289,73 @@ void	Qt_Panel::mouseDoubleClickEvent( QMouseEvent* event )
 	}
 }
 
+/// @brief  Look up the key code that the config file uses for a named modifier
+static int getConfigModifierCode(const char* modName)
+{
+	vector<MLS::KeyInfo> vKeys = MLS::g_tKeyCfg.GetKeyInfo();
+	for (int i = 0; i < (int)vKeys.size(); i++)
+	{
+		if (vKeys[i].sKeyName == modName && vKeys[i].size() > 0)
+			return vKeys[i][0];
+	}
+	return 0;
+}
+
+bool	Qt_Panel::event(QEvent* e)
+{
+	// Accept ShortcutOverride for modifier key combos so that keyPressEvent
+	// always receives Ctrl+/Alt+/Shift+ key events when this panel has focus.
+	// Without this, Qt's QAction shortcut system may consume the event before
+	// keyPressEvent, or fail to match due to extra modifier flags
+	// (e.g. GroupSwitchModifier on multi-layout keyboards).
+	if (e->type() == QEvent::ShortcutOverride)
+	{
+		QKeyEvent* ke = static_cast<QKeyEvent*>(e);
+		Qt::KeyboardModifiers mods = ke->modifiers() &
+			(Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier);
+		if (mods != Qt::NoModifier)
+		{
+			e->accept();
+			return true;
+		}
+	}
+	return QWidget::event(e);
+}
+
 void	Qt_Panel::keyPressEvent(QKeyEvent* event)
 {
 	qDebug() << "Qt_Panel::keyPressEvent";
 	int key = event->key();
 
-	Qt::KeyboardModifiers eKeyStat = event->modifiers();
+	// Strip noise modifiers (GroupSwitchModifier, KeypadModifier, etc.)
+	// that may be set by multi-layout keyboards or NumLock state.
+	Qt::KeyboardModifiers mods = event->modifiers() &
+		(Qt::ControlModifier | Qt::AltModifier | Qt::ShiftModifier);
 
-	qDebug("key keyPressEvent !!! Num [%d] [%s]", key, (const char*)event->text().toLocal8Bit()  );
+	qDebug("key keyPressEvent !!! Num [%d] mods [0x%x] [%s]",
+		key, (int)mods, (const char*)event->text().toLocal8Bit());
 
 	MLS::KeyInfo	tKey( key );
 
-	switch( eKeyStat )
+	// Use bitwise AND checks instead of exact switch matching.
+	// This handles extra modifier flags that would cause case mismatch.
+	if (mods & Qt::ControlModifier)
 	{
-		case Qt::ShiftModifier:
-		{
-			qDebug() << "SHIFT";
-			tKey.vKeyInfo.insert( tKey.vKeyInfo.begin(), Qt::Key_Shift );
-			break;
-		}
-		case Qt::AltModifier:
-			qDebug() << "ALT";
-			tKey.vKeyInfo.insert( tKey.vKeyInfo.begin(), Qt::Key_Alt );
-			break;
-		case Qt::ControlModifier:
-			qDebug() << "CTRL";
-			tKey.vKeyInfo.insert( tKey.vKeyInfo.begin(), Qt::Key_Control );
-			break;
+		qDebug() << "CTRL";
+		int code = getConfigModifierCode("Ctrl");
+		if (code) tKey.vKeyInfo.insert( tKey.vKeyInfo.begin(), code );
+	}
+	else if (mods & Qt::AltModifier)
+	{
+		qDebug() << "ALT";
+		int code = getConfigModifierCode("Alt");
+		if (code) tKey.vKeyInfo.insert( tKey.vKeyInfo.begin(), code );
+	}
+	else if (mods & Qt::ShiftModifier)
+	{
+		qDebug() << "SHIFT";
+		int code = getConfigModifierCode("Shift");
+		if (code) tKey.vKeyInfo.insert( tKey.vKeyInfo.begin(), code );
 	}
 
 	string sCmd = MLS::g_tKeyCfg.GetCommand( tKey , PANEL );
@@ -305,21 +366,21 @@ void	Qt_Panel::keyPressEvent(QKeyEvent* event)
 
 		if ( sCmd.substr(0, 4) == "Cmd_" )
 			strCmd = sCmd.substr(4);
-	
+
 		strCmd.Printf( "%d%s()", QSLOT_CODE, strCmd.c_str() );
 
-		qDebug("key button.. !!! Num [%d] [%s]", key, sCmd.c_str()  );
-		
+		qDebug("key button.. !!! Num [%d] [%s] -> slot [%s]", key, sCmd.c_str(), strCmd.c_str());
+
 		connect(this, SIGNAL( CmdKeyExecute() ), _pPanelCmd, strCmd.c_str() );
 		emit CmdKeyExecute();
 		disconnect(this, SIGNAL( CmdKeyExecute() ), _pPanelCmd, strCmd.c_str() );
-		
+
 		_pScroolBar->update();
 		ChangeFocusUpdate( _uCur );
 	}
 	else
 	{
-		qDebug("Not found... !!! Num [%d]", key  );
+		qDebug("Not found... !!! Num [%d] mods [0x%x]", key, (int)mods);
 		QWidget::keyPressEvent( event );
 	}
 

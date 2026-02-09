@@ -81,8 +81,7 @@ void	Qt_MainWindow::MenuDraw()
 		files.AddItem("dialog-close", _("&Quit LinM"), "Cmd_Quit", true);
 	tMenu.AddCategory(files);
 
-	MenuCategory edit(_("&Edit"));
-		edit.AddItem("", "", "");
+	MenuCategory edit(_("Edit"));
 		edit.AddItem("edit-cut", _("ClipCut"), "Cmd_ClipCut", true);
 		edit.AddItem("edit-copy", _("ClipCopy"), "Cmd_ClipCopy", true);
 		edit.AddItem("edit-paste", _("ClipPaste"), "Cmd_ClipPaste", true);
@@ -95,21 +94,12 @@ void	Qt_MainWindow::MenuDraw()
 		edit.AddItem("edit-rename", _("Rename"), "Cmd_Rename");
 		edit.AddItem("edit-delete", _("Delete"), "Cmd_Remove");
 		edit.AddItem("", "", "");
-		edit.AddItem("edit-find", _("&Find"), "Cmd_FileFind");
-		edit.AddItem("", _("Diff"), "Cmd_Diff");
-		edit.AddItem("", "", "");
 		edit.AddItem("", _("Chmod"), "Cmd_Chmod");
 		edit.AddItem("", _("Chown"), "Cmd_Chown");
 
 	tMenu.AddCategory(edit);
 
-	MenuCategory dire(_("&Directory"));
-		dire.AddItem("", "Mcd", "Cmd_MCD");
-		dire.AddItem("", "Qcd", "Cmd_QCD");
-		dire.AddItem("", "", "");
-		dire.AddItem("", _("Mount List"), "Cmd_MountList");
-		dire.AddItem("", _("&SyncDir"), "Cmd_SyncDirectory");
-		dire.AddItem("", "", "");
+	MenuCategory dire(_("Directory"));
 		dire.AddItem("folder_new", _("Mkdir"), "Cmd_Mkdir", true);
 		dire.AddItem("go-up", _("To parent"), "Cmd_GoParent", true);
 		dire.AddItem("", _("To root"), "Cmd_GoRoot");
@@ -120,27 +110,26 @@ void	Qt_MainWindow::MenuDraw()
 
 	tMenu.AddCategory(dire);	
 
-	MenuCategory run(_("&Run"));
+	MenuCategory run(_("Run"));
 		run.AddItem("system-run", _("&Run"), "Cmd_Enter");
 		run.AddItem("system-run", _("Run(select)"), "Cmd_Execute");
 		run.AddItem("", "", "");
 		run.AddItem("", _("Console Mode"), "Cmd_ConsoleMode");
 		run.AddItem("", _("Shell command"), "Cmd_Shell");
-		run.AddItem("", "", "");
-		run.AddItem("", _("View console"), "Cmd_ESC");
-	
+
 	tMenu.AddCategory(run);
 
 	MenuCategory util(_("&Util"));
-		util.AddItem("network-connect", _("&Remote Connect"), "Cmd_RemoteConnProps");
-		util.AddItem("network-connect", _("&Quick Connect"), "Cmd_RemoteConnect");
+		util.AddItem("network-connect", _("&Remote Connect"), "Cmd_RemoteConnect");
 		util.AddItem("network-disconnect", _("&Disconnect"), "Cmd_RemoteClose");
 		util.AddItem("", "","");
 		util.AddItem("package-x-generic", _("&Extract"), "Cmd_Extract");
 		util.AddItem("", "", "");
 		util.AddItem("application-x-tarz", _("Compress (tar.gz)"), "Cmd_TargzComp");
 		util.AddItem("application-x-bzip", _("Compress (tar.bz2)"), "Cmd_Tarbz2Comp");
-		util.AddItem("application-zip", _("Compress (zip)"), "Cmd_ZipComp");		
+		util.AddItem("application-zip", _("Compress (zip)"), "Cmd_ZipComp");
+		util.AddItem("", "", "");
+		util.AddItem("preferences-desktop-font", _("&Font Settings"), "Cmd_FontSelect");
 	tMenu.AddCategory(util);
 
 	MenuCategory view(_("&View"));
@@ -152,31 +141,17 @@ void	Qt_MainWindow::MenuDraw()
 		view.AddItem("", _("Column 2"), "Cmd_Column2");
 		view.AddItem("", _("Column 3"), "Cmd_Column3");
 		view.AddItem("", _("Column 4"), "Cmd_Column4");
-		util.AddItem("", "", "");
-		util.AddItem("", _("ViewClip"), "Cmd_ViewClip");
 		view.AddItem("", "", "");
 		view.AddItem("", _("Hide hidden file"), "Cmd_HiddenFileView");
-		view.AddItem("", _("Show owner"), "Cmd_FileOwnerView");
-		
+		view.AddItem("", "", "");
 		view.AddItem("", _("Sort Change"), "Cmd_SortChange");
 		view.AddItem("", _("Sort Asc/Descend"), "Cmd_SortAscDescend");
 		view.AddItem("", "", "");
 		view.AddItem("", _("Split"),  "Cmd_Split");
 		view.AddItem("", _("Next window"), "Cmd_NextWindow");
-		view.AddItem("", "", "");
-		view.AddItem("", _("SplitSync On/Off"), "Cmd_SplitViewSync");
-	tMenu.AddCategory(view);
+	tMenu.AddCategory(view);	
 
-	MenuCategory op(_("&Option") );
-		op.AddItem("", _("Linecode Change"), "Cmd_BoxCodeChange");
-		op.AddItem("", _("Locale Change"), "Cmd_LangChange");
-		op.AddItem("", "", "");
-		op.AddItem("", _("Edit Config"), "Cmd_DefaultCfgFileChg");
-		op.AddItem("", _("Edit Keybind"), "Cmd_KeyCfgFileChg");
-		op.AddItem("", _("Edit Colorset"), "Cmd_ColorCfgFileChg");
-	tMenu.AddCategory(op);	
-
-	MenuCategory mls("&Help");
+	MenuCategory mls("Help");
 		mls.AddItem("linm", _("&About"), "Cmd_About");
 		mls.AddItem("", "", "");
 		mls.AddItem("help-about", _("&Help"), "Cmd_Help");
@@ -220,7 +195,7 @@ void	Qt_MainWindow::closeEvent( QCloseEvent* event )
 		if (pPanel->GetReader()->GetReaderName() == "file")
 		{
 			FILE *fp= fopen((g_tCfg.GetValue("Static", "CfgHome") + "path").c_str(), "wb");
-	
+
 			if (fp)
 			{
 				fputs(pPanel->GetPath().c_str(), fp);
@@ -228,6 +203,8 @@ void	Qt_MainWindow::closeEvent( QCloseEvent* event )
 			}
 		}
 	}
+
+	g_tCfg.Save();
 
 	event->accept();
 }

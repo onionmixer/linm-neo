@@ -38,10 +38,10 @@ bool		Qt_McdItem::OpenChk( const string& sPath, bool bChkSubDir, bool bSubDirAll
 
 	string 	sBefPath = pReader->GetPath();
 
-	if ( !_tFile.bDir ) return -1;
+	if ( !_tFile.bDir ) return false;
 
 	if ( pReader->Read( sPath ) == false)
-		return -1;
+		return false;
 
 	vector<Qt_McdItem*>	vDirList;
 	bool	bChkDir = false;
@@ -104,6 +104,9 @@ void Qt_McdItem::setOpen( bool bOpen )
 		OpenChk( _tFile.sFullName, false, false );
 
 		treeWidget()->setUpdatesEnabled( true );
+
+		if ( !childCount() )
+			setChildIndicatorPolicy( QTreeWidgetItem::DontShowIndicator );
 	}
 	setExpanded( bOpen );
 }
@@ -118,6 +121,8 @@ Qt_Mcd::Qt_Mcd(Qt_Panel* pPanel, QWidget* parent, const char* name):
 
 	connect( this, SIGNAL( itemDoubleClicked( QTreeWidgetItem *, int ) ),
 			 this, SLOT( SetPanelDirChg( QTreeWidgetItem *, int ) ) );
+	connect( this, SIGNAL( currentItemChanged( QTreeWidgetItem *, QTreeWidgetItem * ) ),
+			 this, SLOT( OnCurrentItemChanged( QTreeWidgetItem *, QTreeWidgetItem * ) ) );
 }
 
 Qt_Mcd::~Qt_Mcd()
@@ -212,6 +217,14 @@ void	Qt_Mcd::SetPanelDirChg ( QTreeWidgetItem * item, int column )
 		_pPanel->Refresh();
 
 	item->setIcon( 0, QIcon(LinMGlobal::GetSmallIcon( "folder-open" )) );
+}
+
+void	Qt_Mcd::OnCurrentItemChanged( QTreeWidgetItem * current, QTreeWidgetItem * /*previous*/ )
+{
+	if ( current && _pPanel )
+	{
+		_pPanel->TabLabelSet( current->text( 0 ) );
+	}
 }
 
 void	Qt_Mcd::resizeEvent( QResizeEvent* e )

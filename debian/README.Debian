@@ -2,10 +2,19 @@ LinM for Debian
 --------------
 
   LinM is a clone of Mdir, the famous file manager from the MS-DOS age.
-  LinM inherits the keyboard shorcuts and the screen layout from Mdir 
-  to maximize user-friendliness. 
- 
-  For bug reports, comments and questions, please email to 
-  la9527@daum.net or eunseo.choi@gmail.com.
+  LinM inherits the keyboard shortcuts and the screen layout from Mdir
+  to maximize user-friendliness.
 
- -- la9527 <la9527@daum.net>, Tue, 26 Dec 2006 01:00:43 +0900
+  LinM provides both an ncurses TUI (linm) and a Qt5 GUI (linm-qt) interface.
+
+  This package includes:
+    - linm       : ncurses terminal file manager
+    - linm-qt    : Qt5 graphical file manager
+
+  Configuration files are installed to /etc/linm/ and auto-generated
+  in ~/.linm/ on first run if not present.
+
+  For bug reports, comments and questions, please visit
+  https://github.com/onionmixer/linm-neo
+
+ -- onionmixer <onionmixer@users.noreply.github.com>  Mon, 10 Feb 2026 12:00:00 +0900

@@ -18,8 +18,8 @@ if (UNIX)
             COMMAND sed "s%@LINM_VERSION@%${VERSION}%" ${CMAKE_CURRENT_SOURCE_DIR}/syntexset.cfg.in > ${CMAKE_CURRENT_BINARY_DIR}/syntexset.cfg )
 
     add_custom_command(OUTPUT qtkeyset.cfg
-            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/qtkeyset.cfg ${CMAKE_CURRENT_BINARY_DIR}/qtkeyset.cfg
-            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/qtkeyset.cfg)
+            COMMAND sed "s%@LINM_VERSION@%${VERSION}%" ${CMAKE_CURRENT_SOURCE_DIR}/qtkeyset.cfg.in > ${CMAKE_CURRENT_BINARY_DIR}/qtkeyset.cfg
+            DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/qtkeyset.cfg.in)
 
     add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/default_config.h
             COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/generate_default_config.sh

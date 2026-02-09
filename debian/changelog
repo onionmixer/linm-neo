@@ -1,3 +1,15 @@
+linm (0.9.3-1) jammy; urgency=medium
+
+  * Port Qt GUI from Qt4/KDE4 to Qt5 with CMake integration
+  * Qt GUI: Font selection menu, tab support, MCD panel, tooltips
+  * Unified version info between ncurses and Qt builds
+  * All config files (including qtkeyset.cfg) use versioned templates
+  * Save settings on exit in Qt build
+  * Auto-generate all 5 default config files when missing
+  * Add qtbase5-dev build dependency and LinM-Qt desktop entry
+
+ -- onionmixer <onionmixer@users.noreply.github.com>  Mon, 10 Feb 2026 12:00:00 +0900
+
 linm (0.9.2-1) jammy; urgency=medium
 
   * Auto-generate default config files when none found (~/.linm/, /etc/linm/)

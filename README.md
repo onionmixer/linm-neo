@@ -2,10 +2,12 @@
 
 ## Introduction
 
-LinM is a visual file manager for the terminal.
+LinM is a visual file manager for the terminal and desktop.
 
 It's a feature-rich full-screen text mode application that allows you to copy, move and
 delete files and whole directory trees, search for files and run commands in the sub-shell.
+
+LinM provides both an **ncurses TUI** (`linm`) and a **Qt5 GUI** (`linm-qt`) interface.
 
 LinM supports FTP, SFTP, and Samba remote connections, and can view tar, zip, alz, rpm, deb,
 rar, and iso archives directly.
@@ -13,7 +15,7 @@ rar, and iso archives directly.
 It's a clone of Mdir, the famous file manager from the MS-DOS age.
 LinM inherits the keyboard shortcuts and the screen layout from Mdir to maximize user-friendliness.
 
-For bug reports, comments and questions, please email to la9527@daum.net
+For bug reports, comments and questions, please visit the project homepage.
 
 ## System Requirements
 
@@ -22,17 +24,18 @@ For bug reports, comments and questions, please email to la9527@daum.net
 * **openssl** (version 1.0 or higher) - for SFTP support
 * **libssh2** - for SFTP support
 * **libsmbclient** (samba) - for SMB support (optional)
+* **Qt5** (qtbase5-dev) - for Qt GUI (optional, auto-detected)
 
 ### Ubuntu / Debian
 
 ```bash
-sudo apt install build-essential cmake libncursesw5-dev libssl-dev libssh2-1-dev libsmbclient-dev
+sudo apt install build-essential cmake libncursesw5-dev libssl-dev libssh2-1-dev libsmbclient-dev qtbase5-dev
 ```
 
 ### Fedora / RHEL
 
 ```bash
-sudo dnf install gcc-c++ cmake ncurses-devel openssl-devel libssh2-devel libsmbclient-devel
+sudo dnf install gcc-c++ cmake ncurses-devel openssl-devel libssh2-devel libsmbclient-devel qt5-qtbase-devel
 ```
 
 ## Building LinM
@@ -44,11 +47,14 @@ cmake ..
 make -j$(nproc)
 ```
 
+This builds both `linm` (ncurses TUI) and `linm-qt` (Qt5 GUI) if Qt5 is available.
+
 ### CMake Options
 
 | Option | Description |
 |--------|-------------|
 | `-DCMAKE_INSTALL_PREFIX=PATH` | Change the installation prefix (default: `/usr/local`) |
+| `-DLINM_CFGPATH=PATH` | Change the config file install path (default: `PREFIX/etc/linm`) |
 | `-DPTHREAD_ENABLE=OFF` | Build without pthread support |
 | `-DCMAKE_BUILD_TYPE=Debug` | Enable debug build |
 
@@ -60,6 +66,20 @@ sudo make install
 
 To have the shell prompt return to the directory where you ended LinM,
 re-login after installation.
+
+### Configuration Files
+
+On first run, LinM auto-generates default configuration files in `~/.linm/`:
+
+| File | Description |
+|------|-------------|
+| `default.cfg` | General settings |
+| `colorset.cfg` | Color scheme |
+| `keyset.cfg` | Keyboard shortcuts (ncurses) |
+| `qtkeyset.cfg` | Keyboard shortcuts (Qt GUI) |
+| `syntexset.cfg` | Syntax highlighting rules |
+
+System-wide defaults are installed to `/etc/linm/` (or the path set by `-DLINM_CFGPATH`).
 
 ## Supported Platforms
 
@@ -121,6 +141,18 @@ LinM is distributed under the GNU General Public License Version 3.
 See [LICENSE](LICENSE) for details.
 
 ## Changes
+
+### v0.9.3
+
+- Ported Qt GUI from Qt4/KDE4 to Qt5 with CMake integration.
+- Qt GUI: Added font selection menu (Util > Font Settings) with persistent settings.
+- Qt GUI: Added tab support, MCD panel, panel tooltips, chmod/chown dialogs.
+- Qt GUI: Unified version info with ncurses build via VERSION macro.
+- Config: All config files (including qtkeyset.cfg) now use versioned templates.
+- Config: Settings are saved on exit in Qt build (g_tCfg.Save).
+- Config: Auto-generate all 5 default config files (~/.linm/) when missing.
+- Replaced unsafe system("cp") with SafeCopyFile in Qt key config loading.
+- Debian packaging: Added qtbase5-dev build dependency and LinM-Qt desktop entry.
 
 ### v0.9.1
 

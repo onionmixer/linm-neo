@@ -70,6 +70,22 @@ vector<string> _vCfgFile, _vColFile, _vKeyFile;
 
 }
 
+static bool SafeCopyFile(const string& sSrc, const string& sDstDir)
+{
+	string sFileName = sSrc;
+	string::size_type pos = sFileName.rfind('/');
+	if (pos != string::npos)
+		sFileName = sFileName.substr(pos + 1);
+	string sDst = sDstDir + "/" + sFileName;
+
+	std::ifstream in(sSrc.c_str(), std::ios::binary);
+	if (!in.is_open()) return false;
+	std::ofstream out(sDst.c_str(), std::ios::binary);
+	if (!out.is_open()) return false;
+	out << in.rdbuf();
+	return out.good();
+}
+
 static bool WriteDefaultConfig(const string& sFilePath, const char* content)
 {
 	if (access(sFilePath.c_str(), F_OK) == 0) return true;
@@ -85,6 +101,7 @@ static void WriteAllDefaultConfigs(const string& sCfgHome)
 	WriteDefaultConfig(sCfgHome + "colorset.cfg", COLORSET_CFG_CONTENT);
 	WriteDefaultConfig(sCfgHome + "keyset.cfg", KEYSET_CFG_CONTENT);
 	WriteDefaultConfig(sCfgHome + "syntexset.cfg", SYNTEXSET_CFG_CONTENT);
+	WriteDefaultConfig(sCfgHome + "qtkeyset.cfg", QTKEYSET_CFG_CONTENT);
 }
 
 bool Initialize()
@@ -278,8 +295,7 @@ bool	Load_KeyFile()
 #endif
 				if (keyfile == sKeyCfgPath)
 				{
-					string sCmd = "cp " + sKeyCfgPath + " " + g_tCfg.GetValue("Static", "Home") + ".linm";
-					system(sCmd.c_str());
+					SafeCopyFile(sKeyCfgPath, g_tCfg.GetValue("Static", "Home") + ".linm");
 				}
 				break;
 			}
@@ -333,11 +349,6 @@ int main( int argc, char ** argv )
 {
 	QApplication app( argc, argv );
 
-	QFont       font = QApplication::font();
-    font.setPointSize( 10 );
-    font.setFamily(QString::fromUtf8("Arial"));
-    QApplication::setFont( font );
-
 	try
 	{
 		QTextCodec::setCodecForLocale( QTextCodec::codecForName("UTF-8") );
@@ -346,6 +357,15 @@ int main( int argc, char ** argv )
 		{
 			QMessageBox::critical( NULL, QObject::tr("Error"), QObject::tr("config file not founed.(~/.linm/*.cfg") );
 			return 0;
+		}
+
+		{
+			string sFontFamily = g_tCfg.GetValue("Qt_Setting", "FontFamily", "Arial");
+			int nFontSize = g_tCfg.GetValueNum("Qt_Setting", "FontSize", 10);
+			QFont font;
+			font.setFamily(QString::fromUtf8(sFontFamily.c_str()));
+			font.setPointSize(nFontSize);
+			QApplication::setFont(font);
 		}
 
 		if (!Load_KeyFile())
@@ -362,7 +382,7 @@ int main( int argc, char ** argv )
 
 		SetDialogProgress( (MlsDialog*)&tDialog, (MlsProgress*)&tProgress);
 
-		pWin->setWindowTitle( "LinM - 0.8a" );
+		pWin->setWindowTitle( QString("LinM - ") + VERSION );
 
 		const QPixmap&	iconLinm = LinMGlobal::GetSmallIcon( "linm" );
 

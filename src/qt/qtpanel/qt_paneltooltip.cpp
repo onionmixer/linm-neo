@@ -127,6 +127,7 @@ void	PanelToolTip::HideToolTip()
 {
 	hide();
 	_pShowTimer->stop();
+	_pFile = NULL;
 
 	if( _bTranslucency )
 	{

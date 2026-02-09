@@ -1,8 +1,8 @@
-#!version 0.9.0
+#!version @LINM_VERSION@
 
 # this file utf-8 encoding.
 
-# key setting  
+# key setting
 # keyname = num:num:.. , num:..
 [KeyCodeSetting]
 F1 = 16777264
@@ -23,7 +23,7 @@ Space  = 32
 BS     = 16777219
 BACKSPACE = 16777219
 TAB    = 9
-Shift+TAB = 353
+Shift+TAB = 16777248:9
 
 ~ = 126
 | = 124
@@ -33,7 +33,7 @@ Home   = 16777232
 End    = 16777233
 Ins    = 16777222
 Del    = 16777223
-PgUp   = 16777238 
+PgUp   = 16777238
 PgDn   = 16777239
 
 Left   = 16777234
@@ -46,83 +46,83 @@ CRight = 16777249:16777236
 CUp    = 16777249:16777235
 CDown  = 16777249:16777237
 
-SLeft  = 16777237:16777234
-SRight = 16777237:16777236
-SUp    = 16777237:16777235
-SDown  = 16777237:16777237
+SLeft  = 16777248:16777234
+SRight = 16777248:16777236
+SUp    = 16777248:16777235
+SDown  = 16777248:16777237
 / = 47
-ESC    = 4096
+ESC    = 16777216
 
 EQ = 61
 Plus = 43
 Minus = 45
 
-Ctrl = 4129
-Shift = 4128
-Alt = 4131
+Ctrl = 16777249
+Shift = 16777248
+Alt = 16777251
 
-Ctrl+A = 4129:65,4129,97
-Ctrl+B = 4129:66,4129,98
-Ctrl+C = 4129:67,4129,99
-Ctrl+D = 4129:68,4129,100
-Ctrl+E = 4129:69,4129,101
-Ctrl+F = 4129:70,4129,102
-Ctrl+G = 4129:71,4129,103
-Ctrl+H = 4129:72,4129,104
-Ctrl+I = 4129:73,4129,105
-Ctrl+J = 4129:74,4129,106
-Ctrl+K = 4129:75,4129,107
-Ctrl+L = 4129:76,4129,108
-Ctrl+M = 4129:77,4129,109
-Ctrl+N = 4129:78,4129,110
-Ctrl+O = 4129:79,4129,111
-Ctrl+P = 4129:80,4129,112
-Ctrl+Q = 4129:81,4129,113
-Ctrl+R = 4129:82,4129,114
-Ctrl+S = 4129:83,4129,115
-Ctrl+T = 4129:84,4129,116
-Ctrl+U = 4129:85,4129,117
-Ctrl+V = 4129:86,4129,118
-Ctrl+W = 4129:87,4129,119
-Ctrl+X = 4129:88,4129,120
-Ctrl+Y = 4129:89,4129,121
-Ctrl+Z = 4129:90,4129,122
+Ctrl+A = 16777249:65
+Ctrl+B = 16777249:66
+Ctrl+C = 16777249:67
+Ctrl+D = 16777249:68
+Ctrl+E = 16777249:69
+Ctrl+F = 16777249:70
+Ctrl+G = 16777249:71
+Ctrl+H = 16777249:72
+Ctrl+I = 16777249:73
+Ctrl+J = 16777249:74
+Ctrl+K = 16777249:75
+Ctrl+L = 16777249:76
+Ctrl+M = 16777249:77
+Ctrl+N = 16777249:78
+Ctrl+O = 16777249:79
+Ctrl+P = 16777249:80
+Ctrl+Q = 16777249:81
+Ctrl+R = 16777249:82
+Ctrl+S = 16777249:83
+Ctrl+T = 16777249:84
+Ctrl+U = 16777249:85
+Ctrl+V = 16777249:86
+Ctrl+W = 16777249:87
+Ctrl+X = 16777249:88
+Ctrl+Y = 16777249:89
+Ctrl+Z = 16777249:90
 
-Alt+0  = 4131:48
-Alt+1  = 4131:49
-Alt+2  = 4131:50
-Alt+3  = 4131:51
-Alt+4  = 4131:52
-Alt+5  = 4131:53
+Alt+0  = 16777251:48
+Alt+1  = 16777251:49
+Alt+2  = 16777251:50
+Alt+3  = 16777251:51
+Alt+4  = 16777251:52
+Alt+5  = 16777251:53
 
-Alt+A  = 4131:65,4131:97
-Alt+B  = 4131:66,4131:98
-Alt+C  = 4131:67,4131:99
-Alt+D  = 4131:68,4131:100
-Alt+E  = 4131:69,4131:101
-Alt+F  = 4131:70,4131:102
-Alt+G  = 4131:71,4131:103
-Alt+H  = 4131:72,4131:104
-Alt+I  = 4131:73,4131:105
-Alt+J  = 4131:74,4131:106
-Alt+K  = 4131:75,4131:107
-Alt+L  = 4131:76,4131:108
-Alt+M  = 4131:77,4131:109
-Alt+N  = 4131:78,4131:110
-Alt+O  = 4131:79,4131:111
-Alt+P  = 4131:80,4131:112
-Alt+Q  = 4131:81,4131:113
-Alt+R  = 4131:82,4131:114
-Alt+S  = 4131:83,4131:115
-Alt+T  = 4131:84,4131:116
-Alt+U  = 4131:85,4131:117
-Alt+V  = 4131:86,4131:118
-Alt+W  = 4131:87,4131:119
-Alt+X  = 4131:88,4131:120
-Alt+Y  = 4131:89,4131:121
-Alt+Z  = 4131:90,4131:122
+Alt+A  = 16777251:65
+Alt+B  = 16777251:66
+Alt+C  = 16777251:67
+Alt+D  = 16777251:68
+Alt+E  = 16777251:69
+Alt+F  = 16777251:70
+Alt+G  = 16777251:71
+Alt+H  = 16777251:72
+Alt+I  = 16777251:73
+Alt+J  = 16777251:74
+Alt+K  = 16777251:75
+Alt+L  = 16777251:76
+Alt+M  = 16777251:77
+Alt+N  = 16777251:78
+Alt+O  = 16777251:79
+Alt+P  = 16777251:80
+Alt+Q  = 16777251:81
+Alt+R  = 16777251:82
+Alt+S  = 16777251:83
+Alt+T  = 16777251:84
+Alt+U  = 16777251:85
+Alt+V  = 16777251:86
+Alt+W  = 16777251:87
+Alt+X  = 16777251:88
+Alt+Y  = 16777251:89
+Alt+Z  = 16777251:90
 
-Alt+Enter = 4131:4100
+Alt+Enter = 16777251:16777220
 
 [Command]
 # common key
@@ -132,55 +132,39 @@ Cmd_Up      = Up
 Cmd_Down    = Down
 Cmd_Home    = Home
 Cmd_End     = End
-Cmd_Del     = Del
-Cmd_Ins     = Ins
 Cmd_PgUp    = PgUp
 Cmd_PgDn    = PgDn
 Cmd_Enter   = Enter
-Cmd_BS      = BS
 Cmd_Help    = F1
 Cmd_Refresh = F5
-Cmd_Menu    = F12
-Cmd_ESC     = ESC
 Cmd_Quit    = Alt+X,Ctrl+Q
 
 # Linm Panel key
 [Command_Panel]
-Cmd_Shell   = / 
+Cmd_Shell   = /
 
 Cmd_GoParent= BS
 Cmd_GoRoot  = \,|
 Cmd_GoHome  = ~
 
 Cmd_Rename  = F2
-Cmd_View    = F3
-Cmd_Edit    = F4
 
 Cmd_Copy    = Alt+C
 Cmd_Move    = Alt+M,F6
 Cmd_Mkdir   = F7
 Cmd_Remove  = F8, Ctrl+D, Alt+D
-Cmd_SizeInfo= F9
-Cmd_MCD     = F10
-Cmd_QCD     = F11
 Cmd_Select  = Space
 Cmd_SelectAll = Ctrl+A
 Cmd_SelectInvert = Ctrl+U
 
 Cmd_NextWindow = Ctrl+E,TAB
 Cmd_Split = Ctrl+W
-Cmd_SplitViewSync = Ctrl+Y
 
 Cmd_ClipCopy = Ctrl+C
 Cmd_ClipCut = Ctrl+X
 Cmd_ClipPaste = Ctrl+V,Ins
 
-Cmd_ViewClip = Alt+P
-
-Cmd_BoxCodeChange = Alt+L
-Cmd_LangChange = Ctrl+L
 Cmd_HiddenFileView = Alt+Z
-Cmd_FileOwnerView = Alt+O
 Cmd_SortChange = Alt+S
 Cmd_SortAscDescend = Alt+A
 Cmd_ColumnAuto = Alt+0
@@ -191,8 +175,6 @@ Cmd_Column4 = Alt+4
 
 Cmd_RemoteConnect = Ctrl+R
 Cmd_RemoteClose = Alt+R
-Cmd_RemoteConnProps = Ctrl+P
-Cmd_MountList  = Ctrl+G
 
 Cmd_Back = Alt+Q
 Cmd_Forward = Alt+W
@@ -204,12 +186,9 @@ Cmd_Extract = Alt+E
 Cmd_Execute = Alt+Enter
 
 Cmd_Chmod = Alt+H
-Cmd_SyncDirectory = Ctrl+S
 Cmd_ConsoleMode = Ctrl+O
 
 Cmd_Chown = Alt+N
-Cmd_Diff = Alt+I
-Cmd_FileFind = Ctrl+F
 
 # Quick Change Directory key
 [Command_Mcd]
@@ -276,20 +255,13 @@ Cmd_Edit = [vim --cmd "set fileencodings=utf-8,euc-kr"]
 # Help locale view. this file locale converting;
 [Help]
 Cmd_Help = _("Help")
-Cmd_Menu = _("Menu")
-Cmd_ESC = _("Console View & Ftp Close")
 Cmd_Refresh = _("Refresh")
 
 [Help_Panel]
 Cmd_Rename = _("Rename")
-Cmd_Editor = _("Editor")
-Cmd_ExtEditor = _("VI")
 Cmd_Move = _("Move")
 Cmd_Mkdir = _("Mkdir")
 Cmd_Remove = _("Remove")
-Cmd_SizeInfo = _("SizeInfo")
-Cmd_MCD = _("MCD")
-Cmd_QCD = _("QCD")
 
 Cmd_Select = _("File or Directory Select")
 Cmd_Quit = _("LinM Quit")
@@ -300,21 +272,16 @@ Cmd_Shell = _("Command Shell")
 Cmd_ClipCopy = _("Copy files into clipboard.")
 Cmd_ClipCut = _("Cut files into clipboard.")
 Cmd_ClipPaste = _("Clipboard files current directory paste.")
-Cmd_ViewClip = _("Clipboard files view.")
-Cmd_MountList  = _("Mount List")
 
 Cmd_Back = _("Go back directory")
 Cmd_Forward = _("Go forward directory")
 
-Cmd_NewFile = _("Editor new file")
+Cmd_NewFile = _("New file")
 Cmd_TouchFile = _("Touch file")
 Cmd_Chmod = _("Chmod")
 Cmd_Chown = _("Chown")
-Cmd_Diff = _("Diff")
 
-Cmd_RemoteConnProps = _("Remote Connection Manager")
-Cmd_SyncDirectory = _("Sync Directory")
-Cmd_ConsoleMode = _("Console Mode (MC similar)")
+Cmd_ConsoleMode = _("Console Mode")
 
 [Help_Mcd]
 Cmd_Mcd_SubDirOneSearch = _("search subdirectory.")

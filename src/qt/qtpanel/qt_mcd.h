@@ -48,6 +48,7 @@ public:
 
 protected slots:
 	void	SetPanelDirChg ( QTreeWidgetItem * item, int column );
+	void	OnCurrentItemChanged( QTreeWidgetItem * current, QTreeWidgetItem * previous );
 
 private:
 	MLS::Reader*	_pReader;

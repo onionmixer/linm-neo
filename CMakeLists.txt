@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project (linm)
 
 set(PACKAGE "linm")
-set(VERSION "0.9.2")
+set(VERSION "0.9.3")
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 

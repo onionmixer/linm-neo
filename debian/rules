@@ -19,3 +19,4 @@ override_dh_auto_install:
 	install -d $(CURDIR)/debian/linm/usr/share/applications
 	install -m 644 $(CURDIR)/debian/linm.xpm $(CURDIR)/debian/linm/usr/share/pixmaps/
 	install -m 644 $(CURDIR)/debian/LinM.desktop $(CURDIR)/debian/linm/usr/share/applications/
+	install -m 644 $(CURDIR)/debian/LinM-Qt.desktop $(CURDIR)/debian/linm/usr/share/applications/

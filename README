@@ -2,8 +2,10 @@
   LinM inherits the keyboard shortcuts and the screen layout from Mdir
   to maximize user-friendliness.
 
+  LinM provides both an ncurses TUI (linm) and a Qt5 GUI (linm-qt) interface.
+
   For bug reports, comments and questions,
-  please email to la9527@daum.net or eunseo.choi@gmail.com.
+  please visit https://github.com/onionmixer/linm-neo
 
 * Installation Guide
 
@@ -24,12 +26,16 @@
     * samba / libsmbclient (version 3.0.0 or higher, for SMB support)
       (http://www.samba.org)
 
+    * Qt5 (qtbase5-dev) - for Qt GUI (optional, auto-detected)
+
    Build Instructions
 
     $ mkdir build
     $ cd build
     $ cmake ..
     $ make -j$(nproc)
+
+   This builds both linm (ncurses TUI) and linm-qt (Qt5 GUI) if Qt5 is available.
 
    To install (as root or with sudo):
 
@@ -42,15 +48,18 @@
 
     -DCMAKE_INSTALL_PREFIX=PATH   : Change the installation prefix
                                     (/usr/local by default)
+    -DLINM_CFGPATH=PATH           : Change config file install path
+                                    (PREFIX/etc/linm by default)
     -DPTHREAD_ENABLE=OFF          : Build without pthread support.
     -DCMAKE_BUILD_TYPE=Debug      : Enable support for debuggers.
 
 * Installed Files
 
-   1) default.cfg, colorset.cfg, keyset.cfg
+   1) default.cfg, colorset.cfg, keyset.cfg, qtkeyset.cfg, syntexset.cfg
 
       LinM configuration files.
       Under /etc/linm if installed by root; otherwise, under $HOME/.linm.
+      Auto-generated on first run if not present.
 
    2) linm.sh, linm_aliase.sh
 
@@ -222,6 +231,15 @@
 
 ----------------------------------------------------------------------------
 ChangeLog
+
+0.9.3
+  * Ported Qt GUI from Qt4/KDE4 to Qt5 with CMake integration.
+  * Qt GUI: Font selection menu, tab support, MCD panel, tooltips.
+  * Unified version info between ncurses and Qt builds.
+  * All config files (including qtkeyset.cfg) use versioned templates.
+  * Settings saved on exit in Qt build.
+  * Auto-generate all 5 default config files when missing.
+  * Debian packaging: Qt5 build dependency and desktop entry added.
 
 0.9.1
   * Modernized for Ubuntu 22.04+ and GCC 12+ environments.

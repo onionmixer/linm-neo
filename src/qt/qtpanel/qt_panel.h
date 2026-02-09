@@ -58,6 +58,10 @@ public:
 
 	void	Refresh();
 	void	TabLabelChg();
+	void	TabLabelSet( const QString& strName );
+	void	SetViewColumn( int nViewColumn );
+	bool	GetShowFileOwner() const;
+	void	SetShowFileOwner( bool bShow );
 	
 	
 public:
@@ -75,6 +79,7 @@ protected:
 	void	ReadEnd();
 
 protected:
+	bool	event(QEvent* e);
 	void	keyPressEvent(QKeyEvent* event );
 	void	wheelEvent ( QWheelEvent * event );
 	void	mouseDoubleClickEvent( QMouseEvent* event );

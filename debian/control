@@ -2,17 +2,19 @@ Source: linm
 Section: utils
 Priority: optional
 Maintainer: onionmixer <onionmixer@users.noreply.github.com>
-Build-Depends: debhelper (>= 10), cmake (>= 3.10), libncursesw5-dev, libssl-dev, libssh2-1-dev, libsmbclient-dev
+Build-Depends: debhelper (>= 10), cmake (>= 3.10), pkg-config, libncursesw5-dev, zlib1g-dev, libssl-dev, libssh2-1-dev, libsmbclient-dev, libsource-highlight-dev, qtbase5-dev
 Standards-Version: 4.5.1
 Homepage: https://github.com/onionmixer/linm-neo
 
 Package: linm
 Architecture: any
 Depends: ${shlibs:Depends}, ${misc:Depends}
-Description: Visual file manager for the terminal
+Description: Visual file manager for the terminal and desktop
  LinM is a clone of Mdir, the famous file manager from the MS-DOS age.
  LinM inherits the keyboard shortcuts and the screen layout from Mdir
  to maximize user-friendliness.
+ .
+ This package includes both an ncurses TUI (linm) and a Qt5 GUI (linm-qt).
  .
  Features include FTP, SFTP, and Samba remote connections, and viewing
  tar, zip, alz, rpm, deb, rar, and iso archives directly.

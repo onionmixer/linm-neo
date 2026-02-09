@@ -10,7 +10,6 @@ class Qt_Panel;
 class PanelToolTip;
 class PanelStatusBar;
 class PanelCmd;
-class FuncBar;
 class QBoxLayout;
 class Qt_Mcd;
 
@@ -74,7 +73,6 @@ private:
 	PanelToolTip* 		_pToolTip;
 	PanelStatusBar* 	_pStatusBar;
 	PanelCmd*			_pPanelCmd;
-	FuncBar*			_pFuncBar;
 
 	bool				_bSplit;
 	bool				_bViewType;

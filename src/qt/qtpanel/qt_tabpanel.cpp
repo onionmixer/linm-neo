@@ -15,7 +15,6 @@
 #include "qt_mcd.h"
 #include "qt_statusbar.h"
 #include "qt_tabpanel.h"
-#include "qt_funcbar.h"
 
 class	QMcdPanel: public QSplitter
 {
@@ -156,6 +155,11 @@ void		Qt_TabPanel::PanelRemove()
 		if ( pPanelMcd )
 		{
 			removeTab( indexOf(pPanelMcd) );
+
+			// Update shared status bar/tooltip to surviving panel before deletion
+			_pStatusBar->setPanel( ((QMcdPanel*)currentWidget())->_pPanel );
+			_pToolTip->HideToolTip();
+
 			pPanelMcd->close();
 			delete pPanelMcd;
 			pPanelMcd = 0;
@@ -172,6 +176,11 @@ void		Qt_TabPanel::PanelCloseTab( int index )
 		if ( pPanelMcd )
 		{
 			removeTab( index );
+
+			// Update shared status bar/tooltip to surviving panel before deletion
+			_pStatusBar->setPanel( ((QMcdPanel*)currentWidget())->_pPanel );
+			_pToolTip->HideToolTip();
+
 			pPanelMcd->close();
 			delete pPanelMcd;
 			pPanelMcd = 0;
@@ -205,9 +214,12 @@ void	Qt_TabPanel::keyPressEvent( QKeyEvent* event )
 void	Qt_TabPanel::focusInEvent( QFocusEvent* )
 {
 	qDebug("Qt_TabPanel :: focusInEvent");
-	Qt_Panel*	pPanel = (Qt_Panel*)currentWidget();
-	pPanel->activateWindow();
-	pPanel->setFocus();
+	QMcdPanel*	pMcdPanel = (QMcdPanel*)currentWidget();
+	if ( pMcdPanel && pMcdPanel->_pPanel )
+	{
+		pMcdPanel->_pPanel->activateWindow();
+		pMcdPanel->_pPanel->setFocus();
+	}
 }
 
 CentralMain::CentralMain( 	PanelToolTip* 	pToolTip,
@@ -224,10 +236,6 @@ CentralMain::CentralMain( 	PanelToolTip* 	pToolTip,
 
 	_pStatusBar = new PanelStatusBar( this );
 	_pStatusBar->setFixedHeight( 20 );
-
-	_pFuncBar = new FuncBar( this, pPanelCmd );
-	_pFuncBar->init( PANEL );
-	_pFuncBar->setFixedHeight( 20 );
 
 	_pLeftTabWidget = new Qt_TabPanel( pToolTip, _pStatusBar, _pPanelCmd, this );
 	_pRightTabWidget = new Qt_TabPanel( pToolTip, _pStatusBar, _pPanelCmd, this );
@@ -273,7 +281,6 @@ void	CentralMain::DrawPanel()
 
 		_QVbox->addLayout( _QHbox );
 		_QVbox->addWidget( _pStatusBar );
-		_QVbox->addWidget( _pFuncBar );
 	}
 	else if (_bSplit && !_bViewType)
 	{
@@ -293,7 +300,6 @@ void	CentralMain::DrawPanel()
 		_QVbox->addLayout( _QHbox );
 		_QVbox->setContentsMargins( 0, 0, 0, 0 );
 		_QVbox->addWidget( _pStatusBar );
-		_QVbox->addWidget( _pFuncBar );
 	}
 	else if (_bSplit && _bViewType)
 	{
@@ -313,7 +319,6 @@ void	CentralMain::DrawPanel()
 		_QVbox->addLayout( _QHbox );
 		_QVbox->setContentsMargins( 0, 0, 0, 0 );
 		_QVbox->addWidget( _pStatusBar );
-		_QVbox->addWidget( _pFuncBar );
 	}
 
 	_QVbox->activate();
