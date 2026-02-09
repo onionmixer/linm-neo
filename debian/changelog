@@ -1,3 +1,11 @@
+linm (0.9.2-1) jammy; urgency=medium
+
+  * Auto-generate default config files when none found (~/.linm/, /etc/linm/)
+  * Fix config install path mismatch in debian packages (/usr/etc → /etc)
+  * Embed default config content in binary at build time
+
+ -- onionmixer <onionmixer@users.noreply.github.com>  Sun, 09 Feb 2026 21:30:00 +0900
+
 linm (0.9.1-1) jammy; urgency=medium
 
   * Modernized for Ubuntu 22.04+ and GCC 12+

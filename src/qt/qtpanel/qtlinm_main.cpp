@@ -18,6 +18,7 @@
 
 #include <fcntl.h>
 #include <unistd.h>
+#include <fstream>
 
 #include <QApplication>
 #include <QMessageBox>
@@ -40,6 +41,7 @@
 #include "panel.h"
 #include "mlscfgload.h"
 #include "colorcfgload.h"
+#include "default_config.h"
 
 #include "qt_dialog.h"
 #include "qt_statusbar.h"
@@ -71,6 +73,23 @@ namespace { // 처음 기본 세팅
 
 vector<string> _vCfgFile, _vColFile, _vKeyFile;
 
+}
+
+static bool WriteDefaultConfig(const string& sFilePath, const char* content)
+{
+	if (access(sFilePath.c_str(), F_OK) == 0) return true;
+	std::ofstream out(sFilePath.c_str());
+	if (!out.is_open()) return false;
+	out << content;
+	return out.good();
+}
+
+static void WriteAllDefaultConfigs(const string& sCfgHome)
+{
+	WriteDefaultConfig(sCfgHome + "default.cfg", DEFAULT_CFG_CONTENT);
+	WriteDefaultConfig(sCfgHome + "colorset.cfg", COLORSET_CFG_CONTENT);
+	WriteDefaultConfig(sCfgHome + "keyset.cfg", KEYSET_CFG_CONTENT);
+	WriteDefaultConfig(sCfgHome + "syntexset.cfg", SYNTEXSET_CFG_CONTENT);
 }
 
 /// @brief	mls 시작시 초기화 함수
@@ -165,14 +184,24 @@ bool Initialize()
 
 		if (t == (int)_vCfgFile.size())
 		{
-			String sMsg;
-			sMsg.AppendBlank(60, "Load configuration ");
-			cout << sMsg.c_str();
-			cout << failMsg << endl;
-			return false;
+			string sCfgHome = g_tCfg.GetValue("Static", "CfgHome");
+			WriteAllDefaultConfigs(sCfgHome);
+			string sGenCfg = sCfgHome + "default.cfg";
+			if (g_tCfg.Load(sGenCfg.c_str()))
+			{
+				g_tCfg.SetStaticValue("CfgFile", sGenCfg);
+			}
+			else
+			{
+				String sMsg;
+				sMsg.AppendBlank(60, "Load configuration ");
+				cout << sMsg.c_str();
+				cout << failMsg << endl;
+				return false;
+			}
 		}
 	}
-	
+
 	{ // 컬러셋 읽기
 		if ( g_tCfg.GetValue("Default", "ColorSetFile") != "")
 			_vColFile.push_back( g_tCfg.GetValue("Static", "CfgHome") + g_tCfg.GetValue("Default", "ColorSetFile"));
@@ -209,11 +238,21 @@ bool Initialize()
 
 		if (t == (int)_vColFile.size())
 		{
-			String sMsg;
-			sMsg.AppendBlank(60, "Load colorset");
-			cout << sMsg.c_str();
-			cout << failMsg << endl;
-			return false;
+			string sCfgHome = g_tCfg.GetValue("Static", "CfgHome");
+			WriteDefaultConfig(sCfgHome + "colorset.cfg", COLORSET_CFG_CONTENT);
+			string sGenCol = sCfgHome + "colorset.cfg";
+			if (g_tColorCfg.Load(sGenCol.c_str()))
+			{
+				g_tCfg.SetStaticValue("ColFile", sGenCol);
+			}
+			else
+			{
+				String sMsg;
+				sMsg.AppendBlank(60, "Load colorset");
+				cout << sMsg.c_str();
+				cout << failMsg << endl;
+				return false;
+			}
 		}
 	}
 
@@ -286,11 +325,21 @@ bool	Load_KeyFile()
 
 		if (t==(int)_vKeyFile.size())
 		{
-			String sMsg;
-			sMsg.AppendBlank(60, "Load key settings... ");
-			cout << sMsg.c_str();
-			cout << failMsg << endl;
-			return false;
+			string sCfgHome = g_tCfg.GetValue("Static", "CfgHome");
+			WriteDefaultConfig(sCfgHome + "keyset.cfg", KEYSET_CFG_CONTENT);
+			string sGenKey = sCfgHome + "keyset.cfg";
+			if (g_tKeyCfg.Load(sGenKey))
+			{
+				g_tCfg.SetStaticValue("KeyFile", sGenKey);
+			}
+			else
+			{
+				String sMsg;
+				sMsg.AppendBlank(60, "Load key settings... ");
+				cout << sMsg.c_str();
+				cout << failMsg << endl;
+				return false;
+			}
 		}
 	}
 

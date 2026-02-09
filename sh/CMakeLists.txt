@@ -17,15 +17,26 @@ if (UNIX)
     add_custom_command(OUTPUT syntexset.cfg
             COMMAND sed "s%@LINM_VERSION@%${VERSION}%" ${CMAKE_CURRENT_SOURCE_DIR}/syntexset.cfg.in > ${CMAKE_CURRENT_BINARY_DIR}/syntexset.cfg )
 
+    add_custom_command(OUTPUT ${CMAKE_BINARY_DIR}/default_config.h
+            COMMAND ${CMAKE_CURRENT_SOURCE_DIR}/generate_default_config.sh
+                    ${CMAKE_CURRENT_BINARY_DIR}/default.cfg
+                    ${CMAKE_CURRENT_BINARY_DIR}/colorset.cfg
+                    ${CMAKE_CURRENT_BINARY_DIR}/keyset.cfg
+                    ${CMAKE_CURRENT_BINARY_DIR}/syntexset.cfg
+                    ${CMAKE_BINARY_DIR}/default_config.h
+            DEPENDS default.cfg colorset.cfg keyset.cfg syntexset.cfg
+                    ${CMAKE_CURRENT_SOURCE_DIR}/generate_default_config.sh)
+
     add_custom_target(linmScript DEPENDS linm.sh linm.csh linm_alias.csh linm_alias.sh)
-    add_custom_target(linmConfig DEPENDS default.cfg colorset.cfg keyset.cfg syntexset.cfg)
+    add_custom_target(linmConfig DEPENDS default.cfg colorset.cfg keyset.cfg syntexset.cfg
+                      ${CMAKE_BINARY_DIR}/default_config.h)
 
     install(FILES
                 ${CMAKE_CURRENT_BINARY_DIR}/colorset.cfg
                 ${CMAKE_CURRENT_BINARY_DIR}/default.cfg
                 ${CMAKE_CURRENT_BINARY_DIR}/keyset.cfg
                 ${CMAKE_CURRENT_BINARY_DIR}/syntexset.cfg
-            DESTINATION etc/linm )
+            DESTINATION ${__LINM_CFGPATH__} )
 
     install(FILES
                 ${CMAKE_CURRENT_BINARY_DIR}/linm.sh

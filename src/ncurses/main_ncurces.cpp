@@ -37,6 +37,7 @@
 #include "mlsdialog.h"
 #include "subshell.h"
 #include "FSWatchDetect.h"
+#include "default_config.h"
 
 using namespace MLSUTIL;
 using namespace MLS;
@@ -84,6 +85,23 @@ static bool SafeRemoveDir(const string& sPath)
 		return WIFEXITED(status) && WEXITSTATUS(status) == 0;
 	}
 	return false;
+}
+
+static bool WriteDefaultConfig(const string& sFilePath, const char* content)
+{
+	if (access(sFilePath.c_str(), F_OK) == 0) return true;
+	std::ofstream out(sFilePath.c_str());
+	if (!out.is_open()) return false;
+	out << content;
+	return out.good();
+}
+
+static void WriteAllDefaultConfigs(const string& sCfgHome)
+{
+	WriteDefaultConfig(sCfgHome + "default.cfg", DEFAULT_CFG_CONTENT);
+	WriteDefaultConfig(sCfgHome + "colorset.cfg", COLORSET_CFG_CONTENT);
+	WriteDefaultConfig(sCfgHome + "keyset.cfg", KEYSET_CFG_CONTENT);
+	WriteDefaultConfig(sCfgHome + "syntexset.cfg", SYNTEXSET_CFG_CONTENT);
 }
 
 /// @brief	When start program, initialize function
@@ -190,11 +208,27 @@ bool Initialize()
 
 		if (t == (int)_vCfgFile.size())
 		{
-			String sMsg;
-			sMsg.AppendBlank(60, "Loading configuration ");
-			cout << sMsg.c_str();
-			cout << failMsg << endl;
-			return false;
+			string sCfgHome = g_tCfg.GetValue("Static", "CfgHome");
+			WriteAllDefaultConfigs(sCfgHome);
+			string sGenCfg = sCfgHome + "default.cfg";
+			if (g_tCfg.Load(sGenCfg.c_str()))
+			{
+				g_tCfg.SetStaticValue("CfgFile", sGenCfg);
+#ifdef __DEBUGMODE__
+				String sMsg;
+				sMsg.AppendBlank(60, "Generated default configuration %s", sGenCfg.c_str());
+				cout << sMsg.c_str();
+				cout << succMsg << endl;
+#endif
+			}
+			else
+			{
+				String sMsg;
+				sMsg.AppendBlank(60, "Loading configuration ");
+				cout << sMsg.c_str();
+				cout << failMsg << endl;
+				return false;
+			}
 		}
 	}
 	
@@ -231,11 +265,27 @@ bool Initialize()
 
 		if (t == (int)_vColFile.size())
 		{
-			String sMsg;
-			sMsg.AppendBlank(60, "Loading colorset");
-			cout << sMsg.c_str();
-			cout << failMsg << endl;
-			return false;
+			string sCfgHome = g_tCfg.GetValue("Static", "CfgHome");
+			WriteDefaultConfig(sCfgHome + "colorset.cfg", COLORSET_CFG_CONTENT);
+			string sGenCol = sCfgHome + "colorset.cfg";
+			if (g_tColorCfg.Load(sGenCol.c_str()))
+			{
+				g_tCfg.SetStaticValue("ColFile", sGenCol);
+#ifdef __DEBUGMODE__
+				String sMsg;
+				sMsg.AppendBlank(60, "Generated default colorset %s", sGenCol.c_str());
+				cout << sMsg.c_str();
+				cout << succMsg << endl;
+#endif
+			}
+			else
+			{
+				String sMsg;
+				sMsg.AppendBlank(60, "Loading colorset");
+				cout << sMsg.c_str();
+				cout << failMsg << endl;
+				return false;
+			}
 		}
 	}
 	return true;
@@ -288,11 +338,27 @@ bool	Load_KeyFile()
 
 		if (t==(int)_vKeyFile.size())
 		{
-			String sMsg;
-			sMsg.AppendBlank(60, "Loading key settings... ");
-			cout << sMsg.c_str();
-			cout << failMsg << endl;
-			return false;
+			string sCfgHome = g_tCfg.GetValue("Static", "CfgHome");
+			WriteDefaultConfig(sCfgHome + "keyset.cfg", KEYSET_CFG_CONTENT);
+			string sGenKey = sCfgHome + "keyset.cfg";
+			if (g_tKeyCfg.Load(sGenKey))
+			{
+				g_tCfg.SetStaticValue("KeyFile", sGenKey);
+#ifdef __DEBUGMODE__
+				String sMsg;
+				sMsg.AppendBlank(60, "Generated default keyset %s", sGenKey.c_str());
+				cout << sMsg.c_str();
+				cout << succMsg << endl;
+#endif
+			}
+			else
+			{
+				String sMsg;
+				sMsg.AppendBlank(60, "Loading key settings... ");
+				cout << sMsg.c_str();
+				cout << failMsg << endl;
+				return false;
+			}
 		}
 	}
 	
@@ -327,6 +393,17 @@ bool	Load_KeyFile()
 				sMsg.AppendBlank(60, "Loading syntex %s", syntexFile.c_str());
 				cout << sMsg.c_str();
 				cout << failMsg << endl;
+			}
+		}
+
+		if (t==(int)_vSyntaxCfgFile.size())
+		{
+			string sCfgHome = g_tCfg.GetValue("Static", "CfgHome");
+			WriteDefaultConfig(sCfgHome + "syntexset.cfg", SYNTEXSET_CFG_CONTENT);
+			string sGenSyntex = sCfgHome + "syntexset.cfg";
+			if (g_tSyntaxExtCfg.Load(sGenSyntex.c_str()))
+			{
+				g_tCfg.SetStaticValue("SyntaxCfgFile", sGenSyntex);
 			}
 		}
 	}

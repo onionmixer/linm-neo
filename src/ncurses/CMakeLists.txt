@@ -13,11 +13,14 @@ include_directories(
         ${CMAKE_SOURCE_DIR}/src/ncurses/dialog
         ${CMAKE_SOURCE_DIR}/src/ncurses )
 
+set_source_files_properties(${CMAKE_BINARY_DIR}/default_config.h PROPERTIES GENERATED TRUE)
+
 SET(
     linm_INCLUDES
         ncurses_panel.h ncurses_mcd.h mainframe_view.h mainframe.h command.h mlsmenu.h
         ncurses_editor.h cmd_editor_imp.h cmd_mcd_imp.h cmd_panel_imp.h ncurses_dialog.h
         cmd_common_imp.h ncurses_qcd.h subshell.h FSWatchDetect.h
+        ${CMAKE_BINARY_DIR}/default_config.h
 )
 
 SET(linm_SRCS
