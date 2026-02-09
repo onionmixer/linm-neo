@@ -204,9 +204,9 @@ endif()
 
 ########### set configure file
 
-set(LINM_CFGPATH "" CACHE PATH "set configure file install path. (default: '${CMAKE_INSTALL_PREFIX}/etc/linm')")
+set(LINM_CFGPATH "" CACHE STRING "set configure file install path. (default: '${CMAKE_INSTALL_PREFIX}/etc/linm')")
 
-if(LINM_CFGPATH)
+if(NOT "${LINM_CFGPATH}" STREQUAL "")
     set(__LINM_CFGPATH__ "${LINM_CFGPATH}")
 else()
     set(__LINM_CFGPATH__ "${CMAKE_INSTALL_PREFIX}/etc/linm")
@@ -216,12 +216,12 @@ message( STATUS "Option - configure path : '${__LINM_CFGPATH__}'" )
 
 ########### set bin path
 
-set(LINM_BINPATH "" CACHE PATH "set binary file install path. (default: '${CMAKE_INSTALL_PREFIX}/bin/linm')")
+set(LINM_BINPATH "" CACHE STRING "set binary file install path. (default: '${CMAKE_INSTALL_PREFIX}/bin')")
 
-if(LINM_BINPATH)
+if(NOT "${LINM_BINPATH}" STREQUAL "")
     set(__LINM_BINPATH__ "${LINM_BINPATH}")
 else()
-    set(__LINM_BINPATH__ "${CMAKE_INSTALL_PREFIX}/bin/linm")
+    set(__LINM_BINPATH__ "${CMAKE_INSTALL_PREFIX}/bin")
 endif()
 
 message( STATUS "Option - configure path : '${__LINM_CFGPATH__}'" )
